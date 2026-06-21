@@ -120,17 +120,15 @@ function render() {
 
 function renderChordCard(chord) {
   const rootPc = NOTE_TO_PC[chord.inputNote];
-  const notePills = chord.notes.map((note) => (
-    `<span class="note-pill${note.pc === rootPc ? " root-note" : ""}">${note.label}</span>`
-  )).join("");
+  const notesText = chord.notes.map((note) => note.label).join(" ");
 
   return `
     <button class="chord-card" type="button" data-chord="${encodeURIComponent(chord.chord)}" aria-label="Play ${chord.chord}">
-      <div class="chord-head">
+      <div class="chord-line">
         <span class="input-note">${chord.inputNote}</span>
         <span class="symbol">${chord.symbol}</span>
+        <span class="inline-notes">${notesText}</span>
       </div>
-      <div class="notes-row">${notePills}</div>
       ${renderKeyboard(chord.notes, rootPc)}
     </button>
   `;

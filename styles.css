@@ -112,7 +112,7 @@ input[type="range"] {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-  padding: 8px 8px 8px;
+  padding: 7px 8px 8px;
   text-align: left;
   color: var(--ink);
   box-shadow: 0 8px 24px rgba(29, 39, 35, 0.08);
@@ -124,43 +124,29 @@ input[type="range"] {
   background: var(--active-soft);
 }
 
-.chord-head {
+.chord-line {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 5px;
+  line-height: 1.1;
 }
 
 .input-note {
-  font-size: clamp(1.15rem, 5.8vw, 1.65rem);
+  font-size: clamp(0.98rem, 4.8vw, 1.3rem);
   font-weight: 900;
 }
 
 .symbol {
-  font-size: clamp(0.98rem, 4.4vw, 1.35rem);
+  font-size: clamp(0.86rem, 3.8vw, 1.08rem);
   font-weight: 800;
 }
 
-.notes-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 8px;
-}
-
-.note-pill {
-  border-radius: 999px;
-  background: #eef3f0;
-  color: #24302c;
-  padding: 5px 8px;
+.inline-notes {
+  color: var(--muted);
+  font-size: clamp(0.76rem, 3.2vw, 0.9rem);
   font-weight: 800;
-  font-size: clamp(0.78rem, 3.4vw, 0.96rem);
-}
-
-.note-pill.root-note {
-  background: #fae7e4;
-  color: #922f28;
 }
 
 .keyboard {

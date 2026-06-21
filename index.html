@@ -8,28 +8,13 @@
   </head>
   <body>
     <main class="app">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Roland J-6 chord sets</p>
-          <h1>J6 Assistant</h1>
-        </div>
-        <div class="counter" id="counter">Loading...</div>
-      </header>
-
       <section class="controls" aria-label="Chord set controls">
         <label class="field">
-          <span>Set</span>
           <select id="setSelect"></select>
-        </label>
-        <label class="field">
-          <span>Find</span>
-          <input id="searchInput" type="search" placeholder="Chord, set, or note">
         </label>
       </section>
 
       <nav class="set-strip" id="setStrip" aria-label="Chord set shortcuts"></nav>
-
-      <section class="set-summary" id="setSummary"></section>
       <section class="chord-list" id="chordList" aria-live="polite"></section>
     </main>
     <script src="script.js"></script>

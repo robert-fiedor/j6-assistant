@@ -34,11 +34,8 @@ const BLACK_KEYS = [
 ];
 
 const els = {
-  counter: document.querySelector("#counter"),
   setSelect: document.querySelector("#setSelect"),
-  searchInput: document.querySelector("#searchInput"),
   setStrip: document.querySelector("#setStrip"),
-  setSummary: document.querySelector("#setSummary"),
   chordList: document.querySelector("#chordList")
 };
 
@@ -118,18 +115,9 @@ function render() {
   const selected = sets.find((set) => set.id === selectedSetId) || sets[0];
   if (!selected) return;
 
-  const query = els.searchInput.value.trim().toLowerCase();
-  const chords = selected.chords.filter((chord) => {
-    const haystack = `${chord.setName} ${chord.chord} ${chord.noteText}`.toLowerCase();
-    return haystack.includes(query);
-  });
+  const chords = selected.chords;
 
   els.setSelect.value = selected.id;
-  els.counter.textContent = `${sets.length} sets`;
-  els.setSummary.innerHTML = `
-    <h2>${selected.presetNumber}. ${selected.name}</h2>
-    <p>${chords.length} of ${selected.chords.length} chords shown. Tap any card to play the exact J-6 voicing.</p>
-  `;
 
   els.setStrip.querySelectorAll(".set-chip").forEach((button) => {
     button.classList.toggle("active", button.dataset.setId === selected.id);
@@ -149,76 +137,48 @@ function renderChordCard(chord) {
   return `
     <button class="chord-card" type="button" data-chord="${encodeURIComponent(chord.chord)}" aria-label="Play ${chord.chord}">
       <div class="chord-head">
-        <span class="trigger">Play</span>
-        <div>
-          <div class="chord-title">
-            <span class="input-note">${chord.inputNote}</span>
-            <span class="symbol">${chord.symbol}</span>
-          </div>
-          <div class="meta">${chord.noteText}</div>
-        </div>
+        <span class="input-note">${chord.inputNote}</span>
+        <span class="symbol">${chord.symbol}</span>
       </div>
       <div class="notes-row">${notePills}</div>
-      ${renderVoicingLane(chord.notes)}
       ${renderKeyboard(chord.notes, rootPc)}
     </button>
   `;
 }
 
-function renderVoicingLane(notes) {
-  const minMidi = Math.min(...notes.map((note) => note.midi));
-  const maxMidi = Math.max(...notes.map((note) => note.midi));
-  const span = Math.max(1, maxMidi - minMidi);
-  const markers = notes.map((note, index) => {
-    const left = ((note.midi - minMidi) / span) * 96 + 2;
-    return `
-      <span class="voice-marker" style="left:${left}%">
-        <span class="voice-dot"></span>
-        <span class="voice-label">${note.label}</span>
-        <span class="voice-index">${index + 1}</span>
-      </span>
-    `;
-  }).join("");
-
-  return `<div class="voicing-lane" aria-label="Exact voicing from low to high">${markers}</div>`;
-}
-
 function renderKeyboard(notes, rootPc) {
   const minMidi = Math.min(...notes.map((note) => note.midi));
   const baseMidi = Math.max(24, Math.min(72, Math.floor(minMidi / 12) * 12));
-  const activeOffsets = new Set(notes
-    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
-    .map((note) => note.midi - baseMidi));
-  const rootOffsets = new Set(notes
-    .filter((note) => note.pc === rootPc)
-    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
-    .map((note) => note.midi - baseMidi));
+  const activePitchClasses = new Set(notes.map((note) => note.pc));
+  const rootPitchClasses = new Set(notes.filter((note) => note.pc === rootPc).map((note) => note.pc));
   const whiteWidth = 100 / WHITE_PCS.length;
   const whiteKeys = WHITE_PCS.map((offset, index) => {
     const x = index * whiteWidth;
-    const activeClass = rootOffsets.has(offset)
+    const pitchClass = (baseMidi + offset) % 12;
+    const activeClass = rootPitchClasses.has(pitchClass)
       ? " key-root"
-      : activeOffsets.has(offset)
+      : activePitchClasses.has(pitchClass)
         ? " key-active"
         : "";
-    const label = PC_TO_SHARP[offset % 12];
+    const label = PC_TO_SHARP[pitchClass];
     return `
-      <rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="86"></rect>
-      <text class="note-label" x="${x + whiteWidth / 2}" y="76">${label}</text>
+      <rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="132"></rect>
+      <text class="note-label" x="${x + whiteWidth / 2}" y="118">${label}</text>
     `;
   }).join("");
 
   const blackKeys = BLACK_KEYS.map((key) => {
     const x = ((key.afterWhite + 1) * whiteWidth) - (whiteWidth * 0.32);
-    const activeClass = rootOffsets.has(key.pc)
+    const pitchClass = (baseMidi + key.pc) % 12;
+    const activeClass = rootPitchClasses.has(pitchClass)
       ? " key-root"
-      : activeOffsets.has(key.pc)
+      : activePitchClasses.has(pitchClass)
         ? " key-active"
         : "";
-    return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="52" rx="2"></rect>`;
+    return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="82" rx="2"></rect>`;
   }).join("");
 
-  return `<svg class="keyboard" viewBox="0 0 100 86" role="img" aria-label="Two octave keyboard voicing">${whiteKeys}${blackKeys}</svg>`;
+  return `<svg class="keyboard" viewBox="0 0 100 132" preserveAspectRatio="none" role="img" aria-label="Two octave keyboard voicing">${whiteKeys}${blackKeys}</svg>`;
 }
 
 function ensureAudio() {
@@ -292,17 +252,13 @@ async function init() {
 
 els.setSelect.addEventListener("change", (event) => {
   selectedSetId = event.target.value;
-  els.searchInput.value = "";
   render();
 });
-
-els.searchInput.addEventListener("input", render);
 
 els.setStrip.addEventListener("click", (event) => {
   const button = event.target.closest("[data-set-id]");
   if (!button) return;
   selectedSetId = button.dataset.setId;
-  els.searchInput.value = "";
   render();
   button.scrollIntoView({ block: "nearest", inline: "center" });
 });
@@ -316,6 +272,5 @@ els.chordList.addEventListener("click", (event) => {
 });
 
 init().catch((error) => {
-  els.counter.textContent = "Load failed";
   els.chordList.innerHTML = `<p class="empty">${error.message}</p>`;
 });

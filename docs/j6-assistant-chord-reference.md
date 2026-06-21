@@ -9,11 +9,11 @@ This document describes the J6 Assistant web app and the Roland J-6 chord-set da
 - Each preset set contains exactly 12 chords, one for each chromatic trigger note.
 - The visible preset selector chooses one preset set at a time.
 - The app renders all 12 chords for the selected preset.
-- Each chord card displays only the trigger note, chord symbol, exact source chord notes, and a two-octave keyboard placeholder.
+- Each chord card displays only the trigger note, chord symbol, exact source chord notes, and a four-octave keyboard placeholder.
 - Tapping a chord card plays the exact notes listed in `chord_notes`.
 - A volume slider controls playback gain. The current base gain is `0.45`, scaled by slider value and divided by the number of notes in the chord.
 - Keyboard keys do not show note-name text. Only active notes are highlighted.
-- Active-key highlighting is based on actual note positions within the two-octave placeholder window starting at the octave of the lowest voiced note. It does not repeat pitch classes across both octaves.
+- Active-key highlighting is based on actual note positions within the four-octave placeholder window starting at the octave of the lowest voiced note. It does not repeat pitch classes across octaves.
 
 ## Data Schema
 
@@ -37,9 +37,9 @@ The source CSV has these columns:
 
 ## Rendering Rules
 
-- The two-octave keyboard is a visual placeholder spanning 25 semitones from the C at or below the lowest voiced note.
+- The four-octave keyboard is a visual placeholder spanning 49 semitones from the C at or below the lowest voiced note.
 - White and black keys are rendered as SVG rectangles.
-- Root keys are highlighted with the root color when the exact voiced root note falls inside the current two-octave window.
+- Root keys are highlighted with the root color when the exact voiced root note falls inside the current four-octave window.
 - Other active notes are highlighted with the active-note color when their exact voiced note falls inside the window.
 - Pitch classes are not duplicated across octaves. A note is highlighted only when its exact MIDI position is inside the displayed window.
 

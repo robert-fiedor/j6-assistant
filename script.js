@@ -18,19 +18,8 @@ const NOTE_TO_PC = {
   Bb: 10,
   B: 11
 };
-const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
-const BLACK_KEYS = [
-  { pc: 1, afterWhite: 0 },
-  { pc: 3, afterWhite: 1 },
-  { pc: 6, afterWhite: 3 },
-  { pc: 8, afterWhite: 4 },
-  { pc: 10, afterWhite: 5 },
-  { pc: 13, afterWhite: 7 },
-  { pc: 15, afterWhite: 8 },
-  { pc: 18, afterWhite: 10 },
-  { pc: 20, afterWhite: 11 },
-  { pc: 22, afterWhite: 12 }
-];
+const WHITE_PITCH_CLASSES = new Set([0, 2, 4, 5, 7, 9, 11]);
+const FOUR_OCTAVE_SPAN = 48;
 
 const els = {
   setSelect: document.querySelector("#setSelect"),
@@ -151,34 +140,53 @@ function renderKeyboard(notes, rootPc) {
   const minMidi = Math.min(...notes.map((note) => note.midi));
   const baseMidi = Math.max(24, Math.min(72, Math.floor(minMidi / 12) * 12));
   const activeOffsets = new Set(notes
-    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + FOUR_OCTAVE_SPAN)
     .map((note) => note.midi - baseMidi));
   const rootOffsets = new Set(notes
     .filter((note) => note.pc === rootPc)
-    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + FOUR_OCTAVE_SPAN)
     .map((note) => note.midi - baseMidi));
-  const whiteWidth = 100 / WHITE_PCS.length;
-  const whiteKeys = WHITE_PCS.map((offset, index) => {
+  const whiteOffsets = [];
+  const blackKeys = [];
+
+  for (let offset = 0; offset <= FOUR_OCTAVE_SPAN; offset += 1) {
+    if (WHITE_PITCH_CLASSES.has((baseMidi + offset) % 12)) {
+      whiteOffsets.push(offset);
+    }
+  }
+
+  const whiteIndexByOffset = new Map(whiteOffsets.map((offset, index) => [offset, index]));
+  for (let offset = 0; offset <= FOUR_OCTAVE_SPAN; offset += 1) {
+    if (!WHITE_PITCH_CLASSES.has((baseMidi + offset) % 12)) {
+      const previousWhiteOffset = [...whiteOffsets].reverse().find((whiteOffset) => whiteOffset < offset);
+      if (previousWhiteOffset !== undefined) {
+        blackKeys.push({ offset, afterWhite: whiteIndexByOffset.get(previousWhiteOffset) });
+      }
+    }
+  }
+
+  const whiteWidth = 100 / whiteOffsets.length;
+  const whiteKeys = whiteOffsets.map((offset, index) => {
     const x = index * whiteWidth;
     const activeClass = rootOffsets.has(offset)
       ? " key-root"
       : activeOffsets.has(offset)
         ? " key-active"
-        : "";
-    return `<rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="132"></rect>`;
+      : "";
+    return `<rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="92"></rect>`;
   }).join("");
 
-  const blackKeys = BLACK_KEYS.map((key) => {
+  const blackRects = blackKeys.map((key) => {
     const x = ((key.afterWhite + 1) * whiteWidth) - (whiteWidth * 0.32);
-    const activeClass = rootOffsets.has(key.pc)
+    const activeClass = rootOffsets.has(key.offset)
       ? " key-root"
-      : activeOffsets.has(key.pc)
+      : activeOffsets.has(key.offset)
         ? " key-active"
         : "";
-    return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="82" rx="2"></rect>`;
+    return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="58" rx="1.4"></rect>`;
   }).join("");
 
-  return `<svg class="keyboard" viewBox="0 0 100 132" preserveAspectRatio="none" role="img" aria-label="Two octave keyboard voicing">${whiteKeys}${blackKeys}</svg>`;
+  return `<svg class="keyboard" viewBox="0 0 100 92" preserveAspectRatio="none" role="img" aria-label="Four octave keyboard voicing">${whiteKeys}${blackRects}</svg>`;
 }
 
 function ensureAudio() {

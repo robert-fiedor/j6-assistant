@@ -104,7 +104,7 @@ input[type="range"] {
 
 .chord-list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .chord-card {
@@ -112,7 +112,7 @@ input[type="range"] {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-  padding: 10px 8px 8px;
+  padding: 8px 8px 8px;
   text-align: left;
   color: var(--ink);
   box-shadow: 0 8px 24px rgba(29, 39, 35, 0.08);
@@ -129,33 +129,33 @@ input[type="range"] {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .input-note {
-  font-size: clamp(1.55rem, 8vw, 2.4rem);
+  font-size: clamp(1.15rem, 5.8vw, 1.65rem);
   font-weight: 900;
 }
 
 .symbol {
-  font-size: clamp(1.15rem, 5.5vw, 1.85rem);
+  font-size: clamp(0.98rem, 4.4vw, 1.35rem);
   font-weight: 800;
 }
 
 .notes-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
 .note-pill {
   border-radius: 999px;
   background: #eef3f0;
   color: #24302c;
-  padding: 7px 10px;
+  padding: 5px 8px;
   font-weight: 800;
-  font-size: clamp(0.9rem, 4vw, 1.1rem);
+  font-size: clamp(0.78rem, 3.4vw, 0.96rem);
 }
 
 .note-pill.root-note {
@@ -165,7 +165,7 @@ input[type="range"] {
 
 .keyboard {
   width: calc(100% + 16px);
-  height: 132px;
+  height: 92px;
   display: block;
   margin: 0 -8px -8px;
 }
@@ -196,6 +196,6 @@ input[type="range"] {
 
 @media (max-width: 420px) {
   .keyboard {
-    height: 118px;
+    height: 86px;
   }
 }

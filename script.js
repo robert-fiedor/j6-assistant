@@ -210,7 +210,7 @@ function playChord(chord, card) {
   const now = audioContext.currentTime;
   const master = audioContext.createGain();
   const filter = audioContext.createBiquadFilter();
-  master.gain.value = (0.225 * volume) / Math.max(1, chord.notes.length);
+  master.gain.value = (0.45 * volume) / Math.max(1, chord.notes.length);
   filter.type = "lowpass";
   filter.frequency.value = 1800;
   filter.Q.value = 0.45;

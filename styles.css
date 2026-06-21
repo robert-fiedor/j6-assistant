@@ -33,24 +33,44 @@ body {
   position: sticky;
   top: 0;
   z-index: 5;
-  padding: 6px 8px 8px;
+  display: grid;
+  grid-template-columns: minmax(82px, 1fr) minmax(0, 4fr);
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px 7px;
   background: rgba(243, 244, 239, 0.94);
   backdrop-filter: blur(12px);
 }
 
 select,
+input,
 button {
   font: inherit;
 }
 
 select {
-  min-height: 48px;
+  min-height: 38px;
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
   color: var(--ink);
-  padding: 0 12px;
+  padding: 0 8px;
+}
+
+.volume-control {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 0 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--active);
 }
 
 .set-strip {

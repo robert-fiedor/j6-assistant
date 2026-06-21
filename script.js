@@ -34,6 +34,7 @@ const BLACK_KEYS = [
 
 const els = {
   setSelect: document.querySelector("#setSelect"),
+  volumeSlider: document.querySelector("#volumeSlider"),
   setStrip: document.querySelector("#setStrip"),
   chordList: document.querySelector("#chordList")
 };
@@ -42,6 +43,7 @@ let audioContext;
 let activeNodes = [];
 let sets = [];
 let selectedSetId = "";
+let volume = 0.75;
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -208,7 +210,7 @@ function playChord(chord, card) {
   const now = audioContext.currentTime;
   const master = audioContext.createGain();
   const filter = audioContext.createBiquadFilter();
-  master.gain.value = 0.14 / Math.max(1, chord.notes.length);
+  master.gain.value = (0.18 * volume) / Math.max(1, chord.notes.length);
   filter.type = "lowpass";
   filter.frequency.value = 1800;
   filter.Q.value = 0.45;
@@ -251,6 +253,10 @@ async function init() {
 els.setSelect.addEventListener("change", (event) => {
   selectedSetId = event.target.value;
   render();
+});
+
+els.volumeSlider.addEventListener("input", (event) => {
+  volume = Number(event.target.value) / 100;
 });
 
 els.setStrip.addEventListener("click", (event) => {

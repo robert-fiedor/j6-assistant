@@ -18,7 +18,6 @@ const NOTE_TO_PC = {
   Bb: 10,
   B: 11
 };
-const PC_TO_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
 const BLACK_KEYS = [
   { pc: 1, afterWhite: 0 },
@@ -149,30 +148,29 @@ function renderChordCard(chord) {
 function renderKeyboard(notes, rootPc) {
   const minMidi = Math.min(...notes.map((note) => note.midi));
   const baseMidi = Math.max(24, Math.min(72, Math.floor(minMidi / 12) * 12));
-  const activePitchClasses = new Set(notes.map((note) => note.pc));
-  const rootPitchClasses = new Set(notes.filter((note) => note.pc === rootPc).map((note) => note.pc));
+  const activeOffsets = new Set(notes
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .map((note) => note.midi - baseMidi));
+  const rootOffsets = new Set(notes
+    .filter((note) => note.pc === rootPc)
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .map((note) => note.midi - baseMidi));
   const whiteWidth = 100 / WHITE_PCS.length;
   const whiteKeys = WHITE_PCS.map((offset, index) => {
     const x = index * whiteWidth;
-    const pitchClass = (baseMidi + offset) % 12;
-    const activeClass = rootPitchClasses.has(pitchClass)
+    const activeClass = rootOffsets.has(offset)
       ? " key-root"
-      : activePitchClasses.has(pitchClass)
+      : activeOffsets.has(offset)
         ? " key-active"
         : "";
-    const label = PC_TO_SHARP[pitchClass];
-    return `
-      <rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="132"></rect>
-      <text class="note-label" x="${x + whiteWidth / 2}" y="118">${label}</text>
-    `;
+    return `<rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="132"></rect>`;
   }).join("");
 
   const blackKeys = BLACK_KEYS.map((key) => {
     const x = ((key.afterWhite + 1) * whiteWidth) - (whiteWidth * 0.32);
-    const pitchClass = (baseMidi + key.pc) % 12;
-    const activeClass = rootPitchClasses.has(pitchClass)
+    const activeClass = rootOffsets.has(key.pc)
       ? " key-root"
-      : activePitchClasses.has(pitchClass)
+      : activeOffsets.has(key.pc)
         ? " key-active"
         : "";
     return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="82" rx="2"></rect>`;

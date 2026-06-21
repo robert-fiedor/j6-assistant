@@ -73,38 +73,10 @@ input[type="range"] {
   accent-color: var(--active);
 }
 
-.set-strip {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 4px 8px 10px;
-  scrollbar-width: none;
-}
-
-.set-strip::-webkit-scrollbar {
-  display: none;
-}
-
-.set-chip {
-  flex: 0 0 auto;
-  min-height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--panel);
-  color: var(--ink);
-  padding: 0 12px;
-  font-weight: 800;
-}
-
-.set-chip.active {
-  background: var(--active);
-  color: white;
-  border-color: var(--active);
-}
-
 .chord-list {
   display: grid;
   gap: 8px;
+  padding-top: 2px;
 }
 
 .chord-card {

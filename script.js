@@ -24,7 +24,6 @@ const FOUR_OCTAVE_SPAN = 48;
 const els = {
   setSelect: document.querySelector("#setSelect"),
   volumeSlider: document.querySelector("#volumeSlider"),
-  setStrip: document.querySelector("#setStrip"),
   chordList: document.querySelector("#chordList")
 };
 
@@ -95,10 +94,6 @@ function renderSetOptions() {
   els.setSelect.innerHTML = sets.map((set) => (
     `<option value="${set.id}">${set.presetNumber}. ${set.name}</option>`
   )).join("");
-
-  els.setStrip.innerHTML = sets.map((set) => (
-    `<button class="set-chip" type="button" data-set-id="${set.id}">${set.presetNumber}</button>`
-  )).join("");
 }
 
 function render() {
@@ -108,10 +103,6 @@ function render() {
   const chords = selected.chords;
 
   els.setSelect.value = selected.id;
-
-  els.setStrip.querySelectorAll(".set-chip").forEach((button) => {
-    button.classList.toggle("active", button.dataset.setId === selected.id);
-  });
 
   els.chordList.innerHTML = chords.length
     ? chords.map(renderChordCard).join("")
@@ -263,14 +254,6 @@ els.setSelect.addEventListener("change", (event) => {
 
 els.volumeSlider.addEventListener("input", (event) => {
   volume = Number(event.target.value) / 100;
-});
-
-els.setStrip.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-set-id]");
-  if (!button) return;
-  selectedSetId = button.dataset.setId;
-  render();
-  button.scrollIntoView({ block: "nearest", inline: "center" });
 });
 
 els.chordList.addEventListener("click", (event) => {

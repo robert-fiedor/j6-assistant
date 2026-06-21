@@ -8,74 +8,30 @@
   </head>
   <body>
     <main class="app">
-      <section class="hero">
+      <header class="topbar">
         <div>
-          <p class="eyebrow">Roland J-6 companion</p>
+          <p class="eyebrow">Roland J-6 chord sets</p>
           <h1>J6 Assistant</h1>
-          <p class="lede">Build quick chord ideas, audition progression shapes, and keep a focused patch note while the groove is still moving.</p>
         </div>
-        <div class="hero-panel" aria-label="Current generated progression">
-          <p class="panel-label">Current progression</p>
-          <div class="progression" id="progression"></div>
-          <button class="primary" id="newIdea" type="button">New idea</button>
-        </div>
+        <div class="counter" id="counter">Loading...</div>
+      </header>
+
+      <section class="controls" aria-label="Chord set controls">
+        <label class="field">
+          <span>Set</span>
+          <select id="setSelect"></select>
+        </label>
+        <label class="field">
+          <span>Find</span>
+          <input id="searchInput" type="search" placeholder="Chord, set, or note">
+        </label>
       </section>
 
-      <section class="workspace" aria-label="J6 assistant controls">
-        <aside class="controls">
-          <label>
-            Key
-            <select id="keySelect"></select>
-          </label>
-          <label>
-            Mood
-            <select id="moodSelect">
-              <option value="warm">Warm</option>
-              <option value="dark">Dark</option>
-              <option value="bright">Bright</option>
-              <option value="late">Late night</option>
-            </select>
-          </label>
-          <label>
-            Pattern length
-            <input id="lengthRange" type="range" min="2" max="8" value="4">
-            <span id="lengthValue">4 chords</span>
-          </label>
-          <label>
-            Texture
-            <select id="textureSelect">
-              <option value="pluck">Pluck</option>
-              <option value="pad">Pad</option>
-              <option value="arp">Arp</option>
-              <option value="bass">Bass support</option>
-            </select>
-          </label>
-        </aside>
+      <nav class="set-strip" id="setStrip" aria-label="Chord set shortcuts"></nav>
 
-        <section class="details">
-          <div class="module">
-            <div class="module-head">
-              <h2>Chord map</h2>
-              <button class="ghost" id="copyProgression" type="button">Copy</button>
-            </div>
-            <div class="chord-grid" id="chordGrid"></div>
-          </div>
-
-          <div class="module two-col">
-            <div>
-              <h2>Performance cues</h2>
-              <ul class="cue-list" id="cueList"></ul>
-            </div>
-            <div>
-              <h2>Session note</h2>
-              <textarea id="sessionNote" rows="7" placeholder="Patch, tempo, pattern number, variation notes..."></textarea>
-              <p class="save-state" id="saveState">Saved locally</p>
-            </div>
-          </div>
-        </section>
-      </section>
+      <section class="set-summary" id="setSummary"></section>
+      <section class="chord-list" id="chordList" aria-live="polite"></section>
     </main>
-
     <script src="script.js"></script>
   </body>
 </html>

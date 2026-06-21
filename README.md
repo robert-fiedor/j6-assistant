@@ -1,10 +1,18 @@
 # J6 Assistant
 
-A small static web app for sketching chord progressions and performance notes for the Roland J-6.
+A mobile-first static web app for browsing Roland J-6 chord sets.
+
+The app loads `data/roland_j6_chord_sets.csv`, shows each preset set with all 12 chords, displays the exact voiced notes from the source data, and plays each chord when tapped.
 
 ## Local Use
 
-Open `index.html` directly, or serve the folder with any static file server.
+Serve the folder with any static file server:
+
+```bash
+python3 -m http.server 8008
+```
+
+Then open `http://localhost:8008`.
 
 ## Publishing
 

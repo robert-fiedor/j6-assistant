@@ -1,145 +1,321 @@
-const keys = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-const chromatic = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-const scaleSteps = [0, 2, 4, 5, 7, 9, 11];
-const majorQualities = ["maj7", "m7", "m7", "maj7", "7", "m7", "m7b5"];
-const degrees = ["I", "ii", "iii", "IV", "V", "vi", "vii"];
-
-const moodPatterns = {
-  warm: [[0, 5, 3, 4], [0, 4, 5, 3], [3, 0, 5, 4]],
-  dark: [[5, 3, 0, 4], [1, 5, 3, 4], [5, 1, 3, 0]],
-  bright: [[0, 3, 4, 0], [0, 4, 1, 3], [3, 4, 0, 5]],
-  late: [[1, 4, 5, 3], [5, 4, 2, 3], [1, 5, 0, 4]]
+const CSV_URL = "data/roland_j6_chord_sets.csv";
+const NOTE_TO_PC = {
+  C: 0,
+  "C#": 1,
+  Db: 1,
+  D: 2,
+  "D#": 3,
+  Eb: 3,
+  E: 4,
+  F: 5,
+  "F#": 6,
+  Gb: 6,
+  G: 7,
+  "G#": 8,
+  Ab: 8,
+  A: 9,
+  "A#": 10,
+  Bb: 10,
+  B: 11
 };
-
-const cues = {
-  pluck: ["Shorten release so the J-6 rhythm stays crisp.", "Try motion on filter cutoff every two bars.", "Leave the first chord dry, then add delay on repeats."],
-  pad: ["Open attack slightly and let chord changes overlap.", "Use fewer bass notes so the voicing breathes.", "Ride the filter into the turnaround chord."],
-  arp: ["Keep chord memory simple and let the arp define movement.", "Accent the second chord for lift.", "Mute one chord tone when the pattern gets busy."],
-  bass: ["Double roots on the downbeat only.", "Use the fifth chord as the bass anchor.", "Keep sub notes shorter than the J-6 chord stabs."]
-};
+const PC_TO_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
+const BLACK_KEYS = [
+  { pc: 1, afterWhite: 0 },
+  { pc: 3, afterWhite: 1 },
+  { pc: 6, afterWhite: 3 },
+  { pc: 8, afterWhite: 4 },
+  { pc: 10, afterWhite: 5 },
+  { pc: 13, afterWhite: 7 },
+  { pc: 15, afterWhite: 8 },
+  { pc: 18, afterWhite: 10 },
+  { pc: 20, afterWhite: 11 },
+  { pc: 22, afterWhite: 12 }
+];
 
 const els = {
-  keySelect: document.querySelector("#keySelect"),
-  moodSelect: document.querySelector("#moodSelect"),
-  lengthRange: document.querySelector("#lengthRange"),
-  lengthValue: document.querySelector("#lengthValue"),
-  textureSelect: document.querySelector("#textureSelect"),
-  progression: document.querySelector("#progression"),
-  chordGrid: document.querySelector("#chordGrid"),
-  cueList: document.querySelector("#cueList"),
-  newIdea: document.querySelector("#newIdea"),
-  copyProgression: document.querySelector("#copyProgression"),
-  sessionNote: document.querySelector("#sessionNote"),
-  saveState: document.querySelector("#saveState")
+  counter: document.querySelector("#counter"),
+  setSelect: document.querySelector("#setSelect"),
+  searchInput: document.querySelector("#searchInput"),
+  setStrip: document.querySelector("#setStrip"),
+  setSummary: document.querySelector("#setSummary"),
+  chordList: document.querySelector("#chordList")
 };
 
-let currentPattern = [];
+let audioContext;
+let activeNodes = [];
+let sets = [];
+let selectedSetId = "";
 
-function noteFrom(root, step) {
-  const rootIndex = chromatic.indexOf(root);
-  return chromatic[(rootIndex + step) % chromatic.length];
-}
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  return lines.slice(1).map((line) => {
+    const [presetNumber, setName, chord, chordNotes] = line.split(",");
+    const [inputNote, ...symbolParts] = chord.split(":");
+    const notes = chordNotes.trim().split(/\s+/).map(parseNote).filter(Boolean);
 
-function buildScale(root) {
-  return scaleSteps.map((step) => noteFrom(root, step));
-}
-
-function buildChord(scale, degreeIndex) {
-  const root = scale[degreeIndex];
-  const third = scale[(degreeIndex + 2) % 7];
-  const fifth = scale[(degreeIndex + 4) % 7];
-  const seventh = scale[(degreeIndex + 6) % 7];
-  return {
-    degree: degrees[degreeIndex],
-    name: `${root}${majorQualities[degreeIndex]}`,
-    notes: [root, third, fifth, seventh]
-  };
-}
-
-function choosePattern() {
-  const mood = els.moodSelect.value;
-  const base = moodPatterns[mood][Math.floor(Math.random() * moodPatterns[mood].length)];
-  const targetLength = Number(els.lengthRange.value);
-  const pattern = [];
-
-  while (pattern.length < targetLength) {
-    pattern.push(...base);
-  }
-
-  return pattern.slice(0, targetLength);
-}
-
-function render() {
-  const scale = buildScale(els.keySelect.value);
-  const chords = currentPattern.map((degreeIndex) => buildChord(scale, degreeIndex));
-
-  els.progression.innerHTML = chords.map((chord) => `<span>${chord.name}</span>`).join("");
-  els.chordGrid.innerHTML = chords.map((chord, index) => `
-    <article class="chord-card">
-      <div class="degree">Step ${index + 1} · ${chord.degree}</div>
-      <div class="chord-name">${chord.name}</div>
-      <div class="notes">${chord.notes.join(" · ")}</div>
-    </article>
-  `).join("");
-
-  els.cueList.innerHTML = cues[els.textureSelect.value].map((cue) => `<li>${cue}</li>`).join("");
-  els.lengthValue.textContent = `${els.lengthRange.value} chords`;
-}
-
-function newIdea() {
-  currentPattern = choosePattern();
-  render();
-}
-
-function copyProgression() {
-  const text = Array.from(els.progression.querySelectorAll("span"))
-    .map((item) => item.textContent)
-    .join(" - ");
-
-  const write = navigator.clipboard
-    ? navigator.clipboard.writeText(text)
-    : Promise.reject(new Error("Clipboard API unavailable"));
-
-  write.catch(() => {
-    const fallback = document.createElement("textarea");
-    fallback.value = text;
-    fallback.setAttribute("readonly", "");
-    fallback.style.position = "fixed";
-    fallback.style.opacity = "0";
-    document.body.append(fallback);
-    fallback.select();
-    document.execCommand("copy");
-    fallback.remove();
-  }).finally(() => {
-    els.copyProgression.textContent = "Copied";
-    els.copyProgression.classList.add("copied");
-    window.setTimeout(() => {
-      els.copyProgression.textContent = "Copy";
-      els.copyProgression.classList.remove("copied");
-    }, 1200);
+    return {
+      presetNumber: Number(presetNumber),
+      setName,
+      setId: `${presetNumber}-${setName}`,
+      chord,
+      inputNote: inputNote.trim(),
+      symbol: symbolParts.join(":").trim(),
+      notes,
+      noteText: chordNotes.trim()
+    };
   });
 }
 
-function saveNote() {
-  localStorage.setItem("j6-assistant-note", els.sessionNote.value);
-  els.saveState.textContent = "Saved locally";
+function parseNote(value) {
+  const match = value.trim().match(/^([A-G](?:#|b)?)(-?\d+)$/);
+  if (!match) return null;
+
+  const [, name, octaveText] = match;
+  const octave = Number(octaveText);
+  const pc = NOTE_TO_PC[name];
+  const midi = (octave + 1) * 12 + pc;
+
+  return {
+    name,
+    octave,
+    midi,
+    pc,
+    label: value.trim(),
+    frequency: 440 * (2 ** ((midi - 69) / 12))
+  };
 }
 
-keys.forEach((key) => {
-  const option = document.createElement("option");
-  option.value = key;
-  option.textContent = key;
-  els.keySelect.append(option);
+function groupSets(rows) {
+  const map = new Map();
+
+  rows.forEach((row) => {
+    if (!map.has(row.setId)) {
+      map.set(row.setId, {
+        id: row.setId,
+        presetNumber: row.presetNumber,
+        name: row.setName,
+        chords: []
+      });
+    }
+    map.get(row.setId).chords.push(row);
+  });
+
+  return Array.from(map.values()).sort((a, b) => a.presetNumber - b.presetNumber);
+}
+
+function renderSetOptions() {
+  els.setSelect.innerHTML = sets.map((set) => (
+    `<option value="${set.id}">${set.presetNumber}. ${set.name}</option>`
+  )).join("");
+
+  els.setStrip.innerHTML = sets.map((set) => (
+    `<button class="set-chip" type="button" data-set-id="${set.id}">${set.presetNumber}</button>`
+  )).join("");
+}
+
+function render() {
+  const selected = sets.find((set) => set.id === selectedSetId) || sets[0];
+  if (!selected) return;
+
+  const query = els.searchInput.value.trim().toLowerCase();
+  const chords = selected.chords.filter((chord) => {
+    const haystack = `${chord.setName} ${chord.chord} ${chord.noteText}`.toLowerCase();
+    return haystack.includes(query);
+  });
+
+  els.setSelect.value = selected.id;
+  els.counter.textContent = `${sets.length} sets`;
+  els.setSummary.innerHTML = `
+    <h2>${selected.presetNumber}. ${selected.name}</h2>
+    <p>${chords.length} of ${selected.chords.length} chords shown. Tap any card to play the exact J-6 voicing.</p>
+  `;
+
+  els.setStrip.querySelectorAll(".set-chip").forEach((button) => {
+    button.classList.toggle("active", button.dataset.setId === selected.id);
+  });
+
+  els.chordList.innerHTML = chords.length
+    ? chords.map(renderChordCard).join("")
+    : `<p class="empty">No chords match this search.</p>`;
+}
+
+function renderChordCard(chord) {
+  const rootPc = NOTE_TO_PC[chord.inputNote];
+  const notePills = chord.notes.map((note) => (
+    `<span class="note-pill${note.pc === rootPc ? " root-note" : ""}">${note.label}</span>`
+  )).join("");
+
+  return `
+    <button class="chord-card" type="button" data-chord="${encodeURIComponent(chord.chord)}" aria-label="Play ${chord.chord}">
+      <div class="chord-head">
+        <span class="trigger">Play</span>
+        <div>
+          <div class="chord-title">
+            <span class="input-note">${chord.inputNote}</span>
+            <span class="symbol">${chord.symbol}</span>
+          </div>
+          <div class="meta">${chord.noteText}</div>
+        </div>
+      </div>
+      <div class="notes-row">${notePills}</div>
+      ${renderVoicingLane(chord.notes)}
+      ${renderKeyboard(chord.notes, rootPc)}
+    </button>
+  `;
+}
+
+function renderVoicingLane(notes) {
+  const minMidi = Math.min(...notes.map((note) => note.midi));
+  const maxMidi = Math.max(...notes.map((note) => note.midi));
+  const span = Math.max(1, maxMidi - minMidi);
+  const markers = notes.map((note, index) => {
+    const left = ((note.midi - minMidi) / span) * 96 + 2;
+    return `
+      <span class="voice-marker" style="left:${left}%">
+        <span class="voice-dot"></span>
+        <span class="voice-label">${note.label}</span>
+        <span class="voice-index">${index + 1}</span>
+      </span>
+    `;
+  }).join("");
+
+  return `<div class="voicing-lane" aria-label="Exact voicing from low to high">${markers}</div>`;
+}
+
+function renderKeyboard(notes, rootPc) {
+  const minMidi = Math.min(...notes.map((note) => note.midi));
+  const baseMidi = Math.max(24, Math.min(72, Math.floor(minMidi / 12) * 12));
+  const activeOffsets = new Set(notes
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .map((note) => note.midi - baseMidi));
+  const rootOffsets = new Set(notes
+    .filter((note) => note.pc === rootPc)
+    .filter((note) => note.midi >= baseMidi && note.midi <= baseMidi + 24)
+    .map((note) => note.midi - baseMidi));
+  const whiteWidth = 100 / WHITE_PCS.length;
+  const whiteKeys = WHITE_PCS.map((offset, index) => {
+    const x = index * whiteWidth;
+    const activeClass = rootOffsets.has(offset)
+      ? " key-root"
+      : activeOffsets.has(offset)
+        ? " key-active"
+        : "";
+    const label = PC_TO_SHARP[offset % 12];
+    return `
+      <rect class="white-key${activeClass}" x="${x}" y="0" width="${whiteWidth}" height="86"></rect>
+      <text class="note-label" x="${x + whiteWidth / 2}" y="76">${label}</text>
+    `;
+  }).join("");
+
+  const blackKeys = BLACK_KEYS.map((key) => {
+    const x = ((key.afterWhite + 1) * whiteWidth) - (whiteWidth * 0.32);
+    const activeClass = rootOffsets.has(key.pc)
+      ? " key-root"
+      : activeOffsets.has(key.pc)
+        ? " key-active"
+        : "";
+    return `<rect class="black-key${activeClass}" x="${x}" y="0" width="${whiteWidth * 0.62}" height="52" rx="2"></rect>`;
+  }).join("");
+
+  return `<svg class="keyboard" viewBox="0 0 100 86" role="img" aria-label="Two octave keyboard voicing">${whiteKeys}${blackKeys}</svg>`;
+}
+
+function ensureAudio() {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}
+
+function stopAudio() {
+  activeNodes.forEach(({ oscillator, gain }) => {
+    try {
+      gain.gain.cancelScheduledValues(audioContext.currentTime);
+      gain.gain.setTargetAtTime(0, audioContext.currentTime, 0.03);
+      oscillator.stop(audioContext.currentTime + 0.12);
+    } catch {
+      // Already stopped.
+    }
+  });
+  activeNodes = [];
+}
+
+function playChord(chord, card) {
+  ensureAudio();
+  stopAudio();
+
+  const now = audioContext.currentTime;
+  const master = audioContext.createGain();
+  const filter = audioContext.createBiquadFilter();
+  master.gain.value = 0.14 / Math.max(1, chord.notes.length);
+  filter.type = "lowpass";
+  filter.frequency.value = 1800;
+  filter.Q.value = 0.45;
+  filter.connect(master);
+  master.connect(audioContext.destination);
+
+  chord.notes.forEach((note, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.value = note.frequency;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(1, now + 0.025 + index * 0.01);
+    gain.gain.setTargetAtTime(0, now + 1.1, 0.22);
+    oscillator.connect(gain);
+    gain.connect(filter);
+    oscillator.start(now + index * 0.01);
+    oscillator.stop(now + 2.2);
+    activeNodes.push({ oscillator, gain });
+  });
+
+  card.classList.add("playing");
+  window.setTimeout(() => card.classList.remove("playing"), 550);
+}
+
+function findChordByEncodedName(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  return sets.flatMap((set) => set.chords).find((chord) => chord.chord === name);
+}
+
+async function init() {
+  const response = await fetch(CSV_URL);
+  const text = await response.text();
+  sets = groupSets(parseCSV(text));
+  selectedSetId = sets[0]?.id || "";
+  renderSetOptions();
+  render();
+}
+
+els.setSelect.addEventListener("change", (event) => {
+  selectedSetId = event.target.value;
+  els.searchInput.value = "";
+  render();
 });
 
-els.sessionNote.value = localStorage.getItem("j6-assistant-note") || "";
-els.keySelect.value = "C";
-newIdea();
+els.searchInput.addEventListener("input", render);
 
-els.newIdea.addEventListener("click", newIdea);
-els.copyProgression.addEventListener("click", copyProgression);
-els.keySelect.addEventListener("change", render);
-els.moodSelect.addEventListener("change", newIdea);
-els.textureSelect.addEventListener("change", render);
-els.lengthRange.addEventListener("input", newIdea);
-els.sessionNote.addEventListener("input", saveNote);
+els.setStrip.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-set-id]");
+  if (!button) return;
+  selectedSetId = button.dataset.setId;
+  els.searchInput.value = "";
+  render();
+  button.scrollIntoView({ block: "nearest", inline: "center" });
+});
+
+els.chordList.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-chord]");
+  if (!card) return;
+
+  const chord = findChordByEncodedName(card.dataset.chord);
+  if (chord) playChord(chord, card);
+});
+
+init().catch((error) => {
+  els.counter.textContent = "Load failed";
+  els.chordList.innerHTML = `<p class="empty">${error.message}</p>`;
+});

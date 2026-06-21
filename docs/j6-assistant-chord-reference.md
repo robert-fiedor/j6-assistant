@@ -1,0 +1,2956 @@
+# J6 Assistant Chord Reference
+
+This document describes the J6 Assistant web app and the Roland J-6 chord-set data it uses. It is intended to be passed to an LLM as a complete reference for the available presets, chord labels, voiced notes, playback behavior, and rendering rules.
+
+## App Summary
+
+- The app is a static GitHub Pages web app served from `index.html`, `styles.css`, `script.js`, and `data/roland_j6_chord_sets.csv`.
+- The source data contains 100 preset sets and 1,200 chord rows.
+- Each preset set contains exactly 12 chords, one for each chromatic trigger note.
+- The visible preset selector chooses one preset set at a time.
+- The app renders all 12 chords for the selected preset.
+- Each chord card displays only the trigger note, chord symbol, exact source chord notes, and a two-octave keyboard placeholder.
+- Tapping a chord card plays the exact notes listed in `chord_notes`.
+- A volume slider controls playback gain. The current base gain is `0.45`, scaled by slider value and divided by the number of notes in the chord.
+- Keyboard keys do not show note-name text. Only active notes are highlighted.
+- Active-key highlighting is based on actual note positions within the two-octave placeholder window starting at the octave of the lowest voiced note. It does not repeat pitch classes across both octaves.
+
+## Data Schema
+
+The source CSV has these columns:
+
+| Column | Meaning | Example |
+| --- | --- | --- |
+| `preset_number` | Numeric Roland J-6 preset set number. | `1` |
+| `name` | Preset set category/name. | `Pop` |
+| `chord` | Trigger note and chord label separated by a colon. | `C: Cadd9` |
+| `chord_notes` | Exact voiced notes used for display and playback, space-separated. | `E4 D4 G3 C3` |
+
+## Note And Playback Rules
+
+- Notes are parsed as scientific-style names with octave numbers, such as `C3`, `F#4`, `Bb3`, or `Ab4`.
+- Enharmonic names in the source are preserved in the visible exact-note list.
+- Playback converts each note to MIDI using `(octave + 1) * 12 + pitchClass`, then to frequency with `440 * 2 ** ((midi - 69) / 12)`.
+- Chords are played with Web Audio oscillators using a triangle waveform.
+- The app stops prior audio before starting a new chord.
+- The source note order is preserved for display and playback scheduling.
+
+## Rendering Rules
+
+- The two-octave keyboard is a visual placeholder spanning 25 semitones from the C at or below the lowest voiced note.
+- White and black keys are rendered as SVG rectangles.
+- Root keys are highlighted with the root color when the exact voiced root note falls inside the current two-octave window.
+- Other active notes are highlighted with the active-note color when their exact voiced note falls inside the window.
+- Pitch classes are not duplicated across octaves. A note is highlighted only when its exact MIDI position is inside the displayed window.
+
+## Complete Chord Matrix
+
+This section lists every source row from `data/roland_j6_chord_sets.csv` as the app uses it.
+
+### Preset 1: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Pop | C | Cadd9 | C: Cadd9 | E4 D4 G3 C3 |
+| 1 | Pop | C# | C#M9/C | C#: C#M9/C | F4 D#4 C4 C#3 |
+| 1 | Pop | D | Dm7 | D: Dm7 | C4 A3 F4 D3 |
+| 1 | Pop | D# | D#M7 | D#: D#M7 | G4 D4 A#3 D#3 |
+| 1 | Pop | E | Cadd9/E | E: Cadd9/E | G4 D4 C4 E3 |
+| 1 | Pop | F | FM9 | F: FM9 | G4 E4 A3 F2 |
+| 1 | Pop | F# | Dadd9/F# | F#: Dadd9/F# | E4 D4 A3 F#2 |
+| 1 | Pop | G | Em7/G | G: Em7/G | G4 E4 D4 G2 |
+| 1 | Pop | G# | Fm6/G# | G#: Fm6/G# | F4 D4 C4 G#2 |
+| 1 | Pop | A | FM/A | A: FM/A | F4 C4 A3 A2 |
+| 1 | Pop | A# | Gm/A# | A#: Gm/A# | G4 D4 A#3 A#2 |
+| 1 | Pop | B | G/B | B: G/B | G4 D4 B3 B2 |
+
+### Preset 2: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 2 | Pop | C | CM9 | C: CM9 | D4 B3 E3 C3 |
+| 2 | Pop | C# | C#dim7 | C#: C#dim7 | E4 A#3 G3 C#3 |
+| 2 | Pop | D | Dm9 | D: Dm9 | E4 C4 F3 D3 |
+| 2 | Pop | D# | D# dim7 | D#: D# dim7 | F#4 C4 A3 D#3 |
+| 2 | Pop | E | Em7 | E: Em7 | G4 D4 B3 E3 |
+| 2 | Pop | F | FM9 | F: FM9 | G4 E4 A3 F3 |
+| 2 | Pop | F# | F#m7b5 | F#: F#m7b5 | E4 C4 A3 F#3 |
+| 2 | Pop | G | F/A | G: F/A | F4 C4 A3 G2 |
+| 2 | Pop | G# | G# dim7 | G#: G# dim7 | F4 D4 B3 G#2 |
+| 2 | Pop | A | Am9 | A: Am9 | G4 C4 B3 A2 |
+| 2 | Pop | A# | C/A# | A#: C/A# | E4 C4 G3 A#2 |
+| 2 | Pop | B | Bm7b5 | B: Bm7b5 | F4 D4 A3 B2 |
+
+### Preset 3: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 3 | Jazz | C | D7sus2/C | C: D7sus2/C | D4 A3 E3 C3 |
+| 3 | Jazz | C# | C#7#9 | C#: C#7#9 | E4 B3 F3 C#3 |
+| 3 | Jazz | D | Dm9 | D: Dm9 | E4 C4 F3 D3 |
+| 3 | Jazz | D# | D7#9 | D#: D7#9 | F#4 C#4 G3 D#3 |
+| 3 | Jazz | E | E7#9 | E: E7#9 | G4 D4 G#3 E3 |
+| 3 | Jazz | F | FM9 | F: FM9 | G4 E4 A3 F3 |
+| 3 | Jazz | F# | F#7#9 | F#: F#7#9 | A4 E4 A#3 F#3 |
+| 3 | Jazz | G | G7(13) | G: G7(13) | E4 B3 F3 G2 |
+| 3 | Jazz | G# | G#7(13) | G#: G#7(13) | F4 C4 F#3 G#2 |
+| 3 | Jazz | A | Am7(11) | A: Am7(11) | D4 C4 G3 A2 |
+| 3 | Jazz | A# | A#9 | A#: A#9 | D4 C4 G#3 A#2 |
+| 3 | Jazz | B | Bm7(11) | B: Bm7(11) | E4 D4 A3 B2 |
+
+### Preset 4: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 4 | Jazz | C | Dsus2/C | C: Dsus2/C | D4 A3 E3 C3 |
+| 4 | Jazz | C# | C#7#9 | C#: C#7#9 | D#4 B3 F3 C#3 |
+| 4 | Jazz | D | Dm9 | D: Dm9 | E4 C4 F3 D3 |
+| 4 | Jazz | D# | D#9 | D#: D#9 | F4 C#4 G3 D#3 |
+| 4 | Jazz | E | Em9 | E: Em9 | F#4 D4 G3 E3 |
+| 4 | Jazz | F | Fm9 | F: Fm9 | G4 D#4 G#3 F2 |
+| 4 | Jazz | F# | F#m7b5 | F#: F#m7b5 | E4 C4 A3 F#2 |
+| 4 | Jazz | G | Gaug7 | G: Gaug7 | D#4 B3 F3 G2 |
+| 4 | Jazz | G# | G#7(13) | G#: G#7(13) | F4 C4 F#3 G#2 |
+| 4 | Jazz | A | Aaug7 | A: Aaug7 | F4 C#4 G3 A2 |
+| 4 | Jazz | A# | A#7(13) | A#: A#7(13) | G4 D4 G#3 A#2 |
+| 4 | Jazz | B | Bm7(11) | B: Bm7(11) | E4 D4 A3 B2 |
+
+### Preset 5: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 5 | Jazz | C | CM9 | C: CM9 | D4 B3 E3 C3 |
+| 5 | Jazz | C# | C#M7 | C#: C#M7 | D#4 C4 F3 C#3 |
+| 5 | Jazz | D | DM9 | D: DM9 | E4 C#4 F#3 D3 |
+| 5 | Jazz | D# | D#M9 | D#: D#M9 | F4 D4 G3 D#3 |
+| 5 | Jazz | E | EM9 | E: EM9 | F#4 D#4 G#3 E3 |
+| 5 | Jazz | F | FM9 | F: FM9 | G4 E4 A3 F3 |
+| 5 | Jazz | F# | F#M9 | F#: F#M9 | G#4 F4 A#3 F#3 |
+| 5 | Jazz | G | GM9 | G: GM9 | A4 F#4 B3 G3 |
+| 5 | Jazz | G# | G#M9 | G#: G#M9 | A#4 G4 C4 G#3 |
+| 5 | Jazz | A | AM9 | A: AM9 | B4 G#4 C#4 A3 |
+| 5 | Jazz | A# | A#M9 | A#: A#M9 | C5 A4 D4 A#3 |
+| 5 | Jazz | B | BM9 | B: BM9 | C#5 A#4 D#4 B3 |
+
+### Preset 6: Blues
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 6 | Blues | C | C9 | C: C9 | E4 D4 A#3 C3 |
+| 6 | Blues | C# | C#9 | C#: C#9 | D#4 B3 F3 C#3 |
+| 6 | Blues | D | D9 | D: D9 | E4 C4 F#3 D3 |
+| 6 | Blues | D# | D#9 | D#: D#9 | F4 C#4 G3 D#3 |
+| 6 | Blues | E | E7#9 | E: E7#9 | G4 D4 G#3 E3 |
+| 6 | Blues | F | Fm9 | F: Fm9 | G4 D#4 A3 F2 |
+| 6 | Blues | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#2 |
+| 6 | Blues | G | G7(13) | G: G7(13) | E4 B3 F3 G2 |
+| 6 | Blues | G# | G#dim7 | G#: G#dim7 | F4 D4 B3 G#2 |
+| 6 | Blues | A | Aaug7 | A: Aaug7 | F4 C#4 G3 A2 |
+| 6 | Blues | A# | A#7(13) | A#: A#7(13) | G4 D4 G#3 A#2 |
+| 6 | Blues | B | Bm7b5 | B: Bm7b5 | F4 D4 A3 B2 |
+
+### Preset 7: Trad Maj
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Trad Maj | C | C | C: C | C5 G4 E4 C3 |
+| 7 | Trad Maj | C# | C#dim7 | C#: C#dim7 | A#4 G4 E4 C#3 |
+| 7 | Trad Maj | D | Dm | D: Dm | A4 F4 D4 D3 |
+| 7 | Trad Maj | D# | D#dim7 | D#: D#dim7 | C5 A4 F#4 D#3 |
+| 7 | Trad Maj | E | Em | E: Em | B4 G4 E4 E3 |
+| 7 | Trad Maj | F | F | F: F | C5 A4 F4 F3 |
+| 7 | Trad Maj | F# | F#m7b5 | F#: F#m7b5 | C5 A4 E4 F#3 |
+| 7 | Trad Maj | G | G | G: G | B4 G4 D4 G3 |
+| 7 | Trad Maj | G# | G#dim7 | G#: G#dim7 | B4 F4 D4 G#3 |
+| 7 | Trad Maj | A | Am | A: Am | C5 A4 E4 A2 |
+| 7 | Trad Maj | A# | A# | A#: A# | A#4 F4 D4 A#2 |
+| 7 | Trad Maj | B | Bdim | B: Bdim | B4 F4 D4 B2 |
+
+### Preset 8: Trad Min
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 8 | Trad Min | C | Cm | C: Cm | C5 G4 D#4 C3 |
+| 8 | Trad Min | C# | C# | C#: C# | G#4 F4 C#4 C#3 |
+| 8 | Trad Min | D | Ddim | D: Ddim | G#4 F4 D4 D3 |
+| 8 | Trad Min | D# | Eb | D#: Eb | A#4 G4 D#4 D#3 |
+| 8 | Trad Min | E | Edim7 | E: Edim7 | A#4 G4 C#4 E3 |
+| 8 | Trad Min | F | Fm | F: Fm | G#4 F4 C4 F2 |
+| 8 | Trad Min | F# | F#dim7 | F#: F#dim7 | A4 D#4 C4 F#2 |
+| 8 | Trad Min | G | Gm | G: Gm | G4 D4 A#3 G2 |
+| 8 | Trad Min | G# | G# | G#: G# | G#4 D#4 C4 G#2 |
+| 8 | Trad Min | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 8 | Trad Min | A# | A# | A#: A# | A#4 F4 D4 A#2 |
+| 8 | Trad Min | B | Bdim7 | B: Bdim7 | G#4 F4 D4 B2 |
+
+### Preset 9: Trad Min 2
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 9 | Trad Min 2 | C | Cm | C: Cm | C5 G4 D#4 C3 |
+| 9 | Trad Min 2 | C# | C# | C#: C# | G#4 F4 C#4 C#3 |
+| 9 | Trad Min 2 | D | Ddim | D: Ddim | G#4 F4 D4 D3 |
+| 9 | Trad Min 2 | D# | D#aug | D#: D#aug | B4 G4 D#4 D#3 |
+| 9 | Trad Min 2 | E | Em | E: Em | B4 G4 E4 E3 |
+| 9 | Trad Min 2 | F | Fm | F: Fm | G#4 F4 C4 F2 |
+| 9 | Trad Min 2 | F# | F#dim7 | F#: F#dim7 | A4 D#4 C4 F#2 |
+| 9 | Trad Min 2 | G | G | G: G | G4 D4 B3 G2 |
+| 9 | Trad Min 2 | G# | G# | G#: G# | C4 D#4 G#4 G#2 |
+| 9 | Trad Min 2 | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 9 | Trad Min 2 | A# | A# | A#: A# | A#4 F4 D4 A#2 |
+| 9 | Trad Min 2 | B | Bdim | B: Bdim | B4 F4 D4 B2 |
+
+### Preset 10: Pop Min
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 10 | Pop Min | C | Cmadd9 | C: Cmadd9 | G4 D#4 D4 C3 |
+| 10 | Pop Min | C# | C#M7 | C#: C#M7 | F4 C4 G#3 C#3 |
+| 10 | Pop Min | D | Dm7b5 | D: Dm7b5 | G#4 F4 C4 D3 |
+| 10 | Pop Min | D# | D#M7 | D#: D#M7 | G4 D4 A#3 D#3 |
+| 10 | Pop Min | E | Edim7 | E: Edim7 | G4 C#4 A#3 E3 |
+| 10 | Pop Min | F | Fm9 | F: Fm9 | G4 D#4 G#3 F2 |
+| 10 | Pop Min | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#2 |
+| 10 | Pop Min | G | Gm7 | G: Gm7 | F4 D4 A#3 G2 |
+| 10 | Pop Min | G# | G#M7 | G#: G#M7 | G4 D#4 C4 G#2 |
+| 10 | Pop Min | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 10 | Pop Min | A# | G#/A# | A#: G#/A# | D#4 C4 G#3 A#2 |
+| 10 | Pop Min | B | Bdim7 | B: Bdim7 | F4 D4 G#3 B2 |
+
+### Preset 11: Pop Min
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 11 | Pop Min | C | Cmadd9 | C: Cmadd9 | G4 D#4 D4 C3 |
+| 11 | Pop Min | C# | Gdim/C# | C#: Gdim/C# | G4 D#4 A#3 C#3 |
+| 11 | Pop Min | D | Dm7b5 | D: Dm7b5 | F4 C4 G#3 D3 |
+| 11 | Pop Min | D# | D#M7 | D#: D#M7 | G4 D4 A#3 D#3 |
+| 11 | Pop Min | E | EM9 | E: EM9 | F#4 D#4 G#3 E3 |
+| 11 | Pop Min | F | Fm9 | F: Fm9 | G4 D#4 G#3 F2 |
+| 11 | Pop Min | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#2 |
+| 11 | Pop Min | G | Gaug7 | G: Gaug7 | D#4 B3 F3 G2 |
+| 11 | Pop Min | G# | G#M7 | G#: G#M7 | G4 D#4 C4 G#2 |
+| 11 | Pop Min | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 11 | Pop Min | A# | Cm7/A# | A#: Cm7/A# | G4 D#4 C4 A#2 |
+| 11 | Pop Min | B | Baug#9 | B: Baug#9 | G4 D#4 D4 B2 |
+
+### Preset 12: Jazz Min
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 12 | Jazz Min | C | Cm7(11) | C: Cm7(11) | F4 D#4 A#3 C3 |
+| 12 | Jazz Min | C# | C#7#9 | C#: C#7#9 | E4 B3 F3 C#3 |
+| 12 | Jazz Min | D | Dm7b5 | D: Dm7b5 | G#4 F4 C4 D3 |
+| 12 | Jazz Min | D# | D#M7#5 | D#: D#M7#5 | G4 D4 B3 D#3 |
+| 12 | Jazz Min | E | E9 | E: E9 | F#4 D4 G#3 E2 |
+| 12 | Jazz Min | F | F9 | F: F9 | G4 D#4 A3 F2 |
+| 12 | Jazz Min | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#2 |
+| 12 | Jazz Min | G | G7#9 | G: G7#9 | A#4 F4 B3 G2 |
+| 12 | Jazz Min | G# | G#M7b5 | G#: G#M7b5 | G4 D4 C4 G#2 |
+| 12 | Jazz Min | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 12 | Jazz Min | A# | A#m7 | A#: A#m7 | F4 C#4 G#3 A#2 |
+| 12 | Jazz Min | B | Bdim7 | B: Bdim7 | F4 D4 G#3 B2 |
+
+### Preset 13: Jazz Min
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 13 | Jazz Min | C | Cm9 | C: Cm9 | D4 A#3 D#3 C3 |
+| 13 | Jazz Min | C# | C#9 | C#: C#9 | D#4 B3 F3 C#3 |
+| 13 | Jazz Min | D | Dm9 | D: Dm9 | E4 C4 F3 D3 |
+| 13 | Jazz Min | D# | D#9 | D#: D#9 | F4 C#4 G3 D#3 |
+| 13 | Jazz Min | E | EM9 | E: EM9 | F#4 D#4 G#3 E2 |
+| 13 | Jazz Min | F | Fm9 | F: Fm9 | G4 D#4 G#3 F2 |
+| 13 | Jazz Min | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#2 |
+| 13 | Jazz Min | G | G7(13) | G: G7(13) | E4 B3 F3 G2 |
+| 13 | Jazz Min | G# | G#m6 | G#: G#m6 | F4 D#4 B3 G#2 |
+| 13 | Jazz Min | A | Am7b5 | A: Am7b5 | G4 D#4 C4 A2 |
+| 13 | Jazz Min | A# | A#m7 | A#: A#m7 | F4 C#4 G#3 A#2 |
+| 13 | Jazz Min | B | Bm7b5 | B: Bm7b5 | F4 D4 A3 B2 |
+
+### Preset 14: Oct Stack
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 14 | Oct Stack | C |  | C: | C5 C4 |
+| 14 | Oct Stack | C# |  | C#: | C#5 C#4 |
+| 14 | Oct Stack | D |  | D: | D5 D4 |
+| 14 | Oct Stack | D# |  | D#: | D#5 D#4 |
+| 14 | Oct Stack | E |  | E: | E5 E4 |
+| 14 | Oct Stack | F |  | F: | F5 F4 |
+| 14 | Oct Stack | F# |  | F#: | F#5 F#4 |
+| 14 | Oct Stack | G |  | G: | G5 G4 |
+| 14 | Oct Stack | G# |  | G#: | G#5 G#4 |
+| 14 | Oct Stack | A |  | A: | A5 A4 |
+| 14 | Oct Stack | A# |  | A#: | A#5 A#4 |
+| 14 | Oct Stack | B |  | B: | B5 B4 |
+
+### Preset 15: 4th Stack
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 15 | 4th Stack | C |  | C: | F4 C4 |
+| 15 | 4th Stack | C# |  | C#: | F#4 C#4 |
+| 15 | 4th Stack | D |  | D: | G4 D4 |
+| 15 | 4th Stack | D# |  | D#: | G#4 D#4 |
+| 15 | 4th Stack | E |  | E: | A4 E4 |
+| 15 | 4th Stack | F |  | F: | A#4 F4 |
+| 15 | 4th Stack | F# |  | F#: | B4 F#4 |
+| 15 | 4th Stack | G |  | G: | C5 G4 |
+| 15 | 4th Stack | G# |  | G#: | C#5 G#4 |
+| 15 | 4th Stack | A |  | A: | D5 A4 |
+| 15 | 4th Stack | A# |  | A#: | D#5 A#4 |
+| 15 | 4th Stack | B |  | B: | E5 B4 |
+
+### Preset 16: 5th Stack
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 16 | 5th Stack | C |  | C: | G4 C4 |
+| 16 | 5th Stack | C# |  | C#: | G#4 C#4 |
+| 16 | 5th Stack | D |  | D: | A4 D4 |
+| 16 | 5th Stack | D# |  | D#: | A#4 D#4 |
+| 16 | 5th Stack | E |  | E: | B4 E4 |
+| 16 | 5th Stack | F |  | F: | C5 F4 |
+| 16 | 5th Stack | F# |  | F#: | C#5 F#4 |
+| 16 | 5th Stack | G |  | G: | D5 G4 |
+| 16 | 5th Stack | G# |  | G#: | D#5 G#4 |
+| 16 | 5th Stack | A |  | A: | E5 A4 |
+| 16 | 5th Stack | A# |  | A#: | F5 A#4 |
+| 16 | 5th Stack | B |  | B: | F#5 B4 |
+
+### Preset 17: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 17 | Utility | C | C | C: C | G3 E3 C3 |
+| 17 | Utility | C# | C# | C#: C# | G#3 F3 C#3 |
+| 17 | Utility | D | D | D: D | A3 F#3 D3 |
+| 17 | Utility | D# | D# | D#: D# | A#3 G3 D#3 |
+| 17 | Utility | E | E | E: E | B3 G#3 E3 |
+| 17 | Utility | F | F | F: F | C4 A3 F3 |
+| 17 | Utility | F# | F# | F#: F# | C#4 A#3 F#3 |
+| 17 | Utility | G | G | G: G | D4 B3 G3 |
+| 17 | Utility | G# | G# | G#: G# | D#4 C4 G#3 |
+| 17 | Utility | A | A | A: A | E4 C#4 A3 |
+| 17 | Utility | A# | A# | A#: A# | F4 D4 A#3 |
+| 17 | Utility | B | B | B: B | F#4 D#4 B3 |
+
+### Preset 18: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 18 | Utility | C | Cm | C: Cm | G3 D#3 C3 |
+| 18 | Utility | C# | C#m | C#: C#m | G#3 E3 C#3 |
+| 18 | Utility | D | Dm | D: Dm | A3 F3 D3 |
+| 18 | Utility | D# | D#m | D#: D#m | A#3 F#3 D#3 |
+| 18 | Utility | E | E | E: E | B3 G3 E3 |
+| 18 | Utility | F | Fm | F: Fm | C4 G#3 F3 |
+| 18 | Utility | F# | F#m | F#: F#m | C#4 A3 F#3 |
+| 18 | Utility | G | Gm | G: Gm | D4 A#3 G3 |
+| 18 | Utility | G# | G#m | G#: G#m | D#4 B3 G#3 |
+| 18 | Utility | A | Am | A: Am | E4 C4 A3 |
+| 18 | Utility | A# | A#m | A#: A#m | F4 C#4 A#3 |
+| 18 | Utility | B | Bm | B: Bm | F#4 D4 B3 |
+
+### Preset 19: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 19 | Utility | C | CM7 | C: CM7 | B3 G3 E3 C3 |
+| 19 | Utility | C# | C#M7 | C#: C#M7 | C4 G#3 F3 C#3 |
+| 19 | Utility | D | DM7 | D: DM7 | C#4 A3 F#3 D3 |
+| 19 | Utility | D# | D#M7 | D#: D#M7 | D4 A#3 G3 D#3 |
+| 19 | Utility | E | EM7 | E: EM7 | D#4 B3 G#3 E3 |
+| 19 | Utility | F | FM7 | F: FM7 | E4 C4 A3 F3 |
+| 19 | Utility | F# | F#FM7 | F#: F#FM7 | F4 C#4 A#3 F#3 |
+| 19 | Utility | G | GM7 | G: GM7 | F#4 D4 B3 G3 |
+| 19 | Utility | G# | G#M7 | G#: G#M7 | G4 D#4 C4 G#3 |
+| 19 | Utility | A | AM7 | A: AM7 | G#4 E4 C#4 A3 |
+| 19 | Utility | A# | A#M7 | A#: A#M7 | A4 F4 D4 A#3 |
+| 19 | Utility | B | BM7 | B: BM7 | A#4 F#4 D#4 B3 |
+
+### Preset 20: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 20 | Utility | C | Cm7 | C: Cm7 | A#3 G3 D#3 C3 |
+| 20 | Utility | C# | C#m7 | C#: C#m7 | B3 G#3 E3 C#3 |
+| 20 | Utility | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 20 | Utility | D# | D#m7 | D#: D#m7 | C#4 A#3 F#3 D#3 |
+| 20 | Utility | E | Em7 | E: Em7 | D4 B3 G3 E3 |
+| 20 | Utility | F | Fm7 | F: Fm7 | D#4 C4 G#3 F3 |
+| 20 | Utility | F# | F#m7 | F#: F#m7 | E4 C#4 A3 F#3 |
+| 20 | Utility | G | Gm7 | G: Gm7 | F4 D4 A#3 G3 |
+| 20 | Utility | G# | G#m7 | G#: G#m7 | F#4 D#4 B3 G#3 |
+| 20 | Utility | A | Am7 | A: Am7 | G4 E4 C4 A3 |
+| 20 | Utility | A# | A#m7 | A#: A#m7 | G#4 F4 C#4 A#3 |
+| 20 | Utility | B | Bm7 | B: Bm7 | A4 F#4 D4 B3 |
+
+### Preset 21: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 21 | Utility | C | CM9 | C: CM9 | D4 B3 E3 C3 |
+| 21 | Utility | C# | C#M9 | C#: C#M9 | D#4 C4 F3 C#3 |
+| 21 | Utility | D | DM9 | D: DM9 | E4 C#4 F#3 D3 |
+| 21 | Utility | D# | D#M9 | D#: D#M9 | F4 D4 G3 D#3 |
+| 21 | Utility | E | EM9 | E: EM9 | F#4 D#4 G#3 E3 |
+| 21 | Utility | F | FM9 | F: FM9 | G4 E4 A3 F3 |
+| 21 | Utility | F# | F#M9 | F#: F#M9 | G#4 F4 A#3 F#3 |
+| 21 | Utility | G | GM9 | G: GM9 | A4 F#4 B3 G3 |
+| 21 | Utility | G# | G#M9 | G#: G#M9 | A#4 G4 C4 G#3 |
+| 21 | Utility | A | AM9 | A: AM9 | B4 G#4 C#4 A3 |
+| 21 | Utility | A# | A#M9 | A#: A#M9 | C5 A4 D4 A#3 |
+| 21 | Utility | B | BM9 | B: BM9 | C#5 A#4 D#4 B3 |
+
+### Preset 22: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 22 | Utility | C | Cm9 | C: Cm9 | D4 A#3 D#3 C3 |
+| 22 | Utility | C# | C#m9 | C#: C#m9 | D#4 B3 E3 C#3 |
+| 22 | Utility | D | Dm9 | D: Dm9 | E4 C4 F3 D3 |
+| 22 | Utility | D# | D#m9 | D#: D#m9 | F4 C#4 F#3 D#3 |
+| 22 | Utility | E | Em9 | E: Em9 | F#4 D4 G3 E3 |
+| 22 | Utility | F | Fm9 | F: Fm9 | G4 D#4 G#3 F3 |
+| 22 | Utility | F# | F#m9 | F#: F#m9 | G#4 E4 A3 F#3 |
+| 22 | Utility | G | Gm9 | G: Gm9 | A4 F4 A#3 G3 |
+| 22 | Utility | G# | G#m9 | G#: G#m9 | A#4 F#4 B3 G#3 |
+| 22 | Utility | A | Am9 | A: Am9 | B4 G4 C4 A3 |
+| 22 | Utility | A# | A#m9 | A#: A#m9 | C5 G#4 C#4 A#3 |
+| 22 | Utility | B | Bm9 | B: Bm9 | C#5 A4 D4 B3 |
+
+### Preset 23: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 23 | Utility | C | CM9/#11 | C: CM9/#11 | F#4 D4 B3 C3 |
+| 23 | Utility | C# | C#M9/#11 | C#: C#M9/#11 | G4 D#4 C4 C#3 |
+| 23 | Utility | D | DM9/#11 | D: DM9/#11 | G#4 E4 C#4 D3 |
+| 23 | Utility | D# | D#M9/#11 | D#: D#M9/#11 | A4 F4 D4 D#3 |
+| 23 | Utility | E | EM9/#11 | E: EM9/#11 | A#4 F#4 D#4 E3 |
+| 23 | Utility | F | FM9/#11 | F: FM9/#11 | B4 G4 E4 F3 |
+| 23 | Utility | F# | F#M9/#11 | F#: F#M9/#11 | C5 G#4 F4 F#3 |
+| 23 | Utility | G | GM9/#11 | G: GM9/#11 | C#5 A4 F#4 G3 |
+| 23 | Utility | G# | G#M9/#11 | G#: G#M9/#11 | D5 A#4 G4 G#3 |
+| 23 | Utility | A | AM9/#11 | A: AM9/#11 | D#5 B4 G#4 A3 |
+| 23 | Utility | A# | A#M9/#11 | A#: A#M9/#11 | E5 C5 A4 A#3 |
+| 23 | Utility | B | BM9/#11 | B: BM9/#11 | F5 C#5 A#4 B3 |
+
+### Preset 24: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 24 | Utility | C | Cm9/11 | C: Cm9/11 | F4 D4 A#3 C3 |
+| 24 | Utility | C# | C#m9/11 | C#: C#m9/11 | F#4 D#4 B3 C#3 |
+| 24 | Utility | D | Dm9/11 | D: Dm9/11 | G4 E4 C4 D3 |
+| 24 | Utility | D# | D#m9/11 | D#: D#m9/11 | G#4 F4 C#4 D#3 |
+| 24 | Utility | E | Em9/11 | E: Em9/11 | A4 F#4 D4 E3 |
+| 24 | Utility | F | Fm9/11 | F: Fm9/11 | A#4 G4 D#4 F3 |
+| 24 | Utility | F# | F#m9/11 | F#: F#m9/11 | B4 G#4 E4 F#3 |
+| 24 | Utility | G | Gm9/11 | G: Gm9/11 | C5 A4 F4 G3 |
+| 24 | Utility | G# | G#m9/11 | G#: G#m9/11 | C#5 A#4 F#4 G#3 |
+| 24 | Utility | A | Am9/11 | A: Am9/11 | D5 B4 G4 A3 |
+| 24 | Utility | A# | A#m9/11 | A#: A#m9/11 | D#5 C5 G#4 A#3 |
+| 24 | Utility | B | Bm9/11 | B: Bm9/11 | E5 C#5 A4 B3 |
+
+### Preset 25: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 25 | Utility | C | CM7 | C: CM7 | B3 G3 E3 C3 |
+| 25 | Utility | C# | CM7 | C#: CM7 | C4 B3 G3 E3 |
+| 25 | Utility | D | CM7 | D: CM7 | E4 C4 B3 G3 |
+| 25 | Utility | D# | CM7 | D#: CM7 | G4 E4 C4 B3 |
+| 25 | Utility | E | CM7 | E: CM7 | B4 G4 E4 C4 |
+| 25 | Utility | F | CM7 | F: CM7 | C5 B4 G4 E4 |
+| 25 | Utility | F# | CM7 | F#: CM7 | B4 E4 G3 C3 |
+| 25 | Utility | G | CM7 | G: CM7 | C5 B4 E4 G3 |
+| 25 | Utility | G# | CM7 | G#: CM7 | E5 B4 G4 C4 |
+| 25 | Utility | A | CM7 | A: CM7 | G5 C5 B4 E4 |
+| 25 | Utility | A# | CM7 | A#: CM7 | B5 E5 C5 G4 |
+| 25 | Utility | B | CM7 | B: CM7 | C6 G5 E5 B4 |
+
+### Preset 26: Utility
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 26 | Utility | C | Cm7 | C: Cm7 | A#3 G3 D#3 C3 |
+| 26 | Utility | C# | Cm7/D# | C#: Cm7/D# | C4 A#3 G3 D#3 |
+| 26 | Utility | D | Cm7/G | D: Cm7/G | D#4 C4 A#3 G3 |
+| 26 | Utility | D# | Cm7/A# | D#: Cm7/A# | G4 D#4 C4 A#3 |
+| 26 | Utility | E | Cm7 | E: Cm7 | A#4 G4 D#4 C4 |
+| 26 | Utility | F | Cm7/D# | F: Cm7/D# | C5 A#4 G4 D#4 |
+| 26 | Utility | F# | Cm7 | F#: Cm7 | A#4 D#4 G3 C3 |
+| 26 | Utility | G | Cm7/G | G: Cm7/G | C5 A#4 D#4 G3 |
+| 26 | Utility | G# | Cm7 | G#: Cm7 | D#5 A#4 G4 C4 |
+| 26 | Utility | A | Cm7/D# | A: Cm7/D# | G5 C5 A#4 D#4 |
+| 26 | Utility | A# | Cm7/G | A#: Cm7/G | A#5 D#5 C5 G4 |
+| 26 | Utility | B | Cm7/A# | B: Cm7/A# | C6 G5 D#5 A#4 |
+
+### Preset 27: Pop/Synth
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 27 | Pop/Synth | C | C | C: C | E4 G3 C3 |
+| 27 | Pop/Synth | C# | Em | C#: Em | G4 B3 E3 |
+| 27 | Pop/Synth | D | G | D: G | B4 D4 G3 |
+| 27 | Pop/Synth | D# | Am | D#: Am | C5 E4 A3 |
+| 27 | Pop/Synth | E | Bm | E: Bm | D5 F#4 B3 |
+| 27 | Pop/Synth | F | C | F: C | E5 G4 C4 |
+| 27 | Pop/Synth | F# | Em | F#: Em | G5 B4 E4 |
+| 27 | Pop/Synth | G | G | G: G | B5 D5 G4 |
+| 27 | Pop/Synth | G# | Am | G#: Am | C6 E5 A4 |
+| 27 | Pop/Synth | A | Bm | A: Bm | D6 F#5 B4 |
+| 27 | Pop/Synth | A# | C | A#: C | E6 G5 C5 |
+| 27 | Pop/Synth | B | Em | B: Em | D7 B5 E5 |
+
+### Preset 28: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 28 | Pop | C | C | C: C | C4 G3 E3 C3 |
+| 28 | Pop | C# | C7 | C#: C7 | A#3 G3 E3 C3 |
+| 28 | Pop | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 28 | Pop | D# | D#M7 | D#: D#M7 | A#3 G3 D3 D#2 |
+| 28 | Pop | E | C/E | E: C/E | C4 G3 E3 E2 |
+| 28 | Pop | F | F | F: F | C4 A3 F3 F2 |
+| 28 | Pop | F# | Fm | F#: Fm | C4 G#3 F3 F2 |
+| 28 | Pop | G | G | G: G | B3 G3 D3 G2 |
+| 28 | Pop | G# | C/G | G#: C/G | C4 G3 E3 G2 |
+| 28 | Pop | A | Am7 | A: Am7 | C4 G3 E3 A2 |
+| 28 | Pop | A# | Eaug/A# | A#: Eaug/A# | C4 G#3 E3 A#2 |
+| 28 | Pop | B | G7/B | B: G7/B | B3 G3 F3 B2 |
+
+### Preset 29: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 29 | Pop | C | C | C: C | E4 C4 C3 C2 |
+| 29 | Pop | C# | FM7 | C#: FM7 | E4 C4 F2 F1 |
+| 29 | Pop | D | G | D: G | D4 B3 G2 G1 |
+| 29 | Pop | D# | Em7 | D#: Em7 | D4 G3 B2 E2 |
+| 29 | Pop | E | Dm7 | E: Dm7 | C4 F3 A2 D2 |
+| 29 | Pop | F | CM7/E | F: CM7/E | C4 G3 B2 E2 |
+| 29 | Pop | F# | F | F#: F | C4 A3 C3 F2 |
+| 29 | Pop | G | D7/G | G: D7/G | D4 A3 C3 G2 |
+| 29 | Pop | G# | G | G#: G | D4 B3 D3 G2 |
+| 29 | Pop | A | Am | A: Am | E4 C4 E3 A2 |
+| 29 | Pop | A# | Dm | A#: Dm | F4 A3 A2 D2 |
+| 29 | Pop | B | G7 | B: G7 | G4 B3 F3 G2 |
+
+### Preset 30: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 30 | Pop | C | Cm | C: Cm | D#4 G3 C3 |
+| 30 | Pop | C# | D# | C#: D# | G4 A#3 D#3 |
+| 30 | Pop | D | G# | D: G# | C4 D#3 G#2 |
+| 30 | Pop | D# | A# | D#: A# | D4 F3 A#2 |
+| 30 | Pop | E | Gm | E: Gm | G4 D4 A#3 G3 |
+| 30 | Pop | F | G# | F: G# | G#4 D#4 C4 G#3 |
+| 30 | Pop | F# | D# | F#: D# | G4 D#4 A#3 D#3 |
+| 30 | Pop | G | A#sus4/D | G: A#sus4/D | F4 D#4 A#3 D3 |
+| 30 | Pop | G# | Cm | G#: Cm | D#4 C4 G3 C3 |
+| 30 | Pop | A | G/B | A: G/B | D4 B3 G3 B2 |
+| 30 | Pop | A# | G# | A#: G# | C4 G#3 D#3 G#2 |
+| 30 | Pop | B | F/A | B: F/A | C4 A3 F3 A2 |
+
+### Preset 31: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 31 | Pop | C | Cadd11 | C: Cadd11 | C5 F4 E4 C3 |
+| 31 | Pop | C# | Bb/C | C#: Bb/C | F4 D4 A#3 C3 |
+| 31 | Pop | D | Dm7 | D: Dm7 | F4 C4 A3 D3 |
+| 31 | Pop | D# | D7 | D#: D7 | F#4 C4 A3 D3 |
+| 31 | Pop | E | Cadd9/E | E: Cadd9/E | G4 D4 C4 E3 |
+| 31 | Pop | F | FM7 | F: FM7 | A4 E4 C4 F3 |
+| 31 | Pop | F# | F7 | F#: F7 | A4 D#4 C4 F3 |
+| 31 | Pop | G | Gm7 | G: Gm7 | A#4 F4 D4 G3 |
+| 31 | Pop | G# | A/G | G#: A/G | A4 E4 C#4 G3 |
+| 31 | Pop | A | FM7/A | A: FM7/A | C5 F4 E4 A3 |
+| 31 | Pop | A# | F/Bb | A#: F/Bb | A4 F4 C4 A#3 |
+| 31 | Pop | B | G7/B | B: G7/B | G4 F4 D4 B3 |
+
+### Preset 32: Pop
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 32 | Pop | C | Cmb13 | C: Cmb13 | D#4 G#3 G3 C3 |
+| 32 | Pop | C# | D#M7 | C#: D#M7 | G4 D4 A#3 D#3 |
+| 32 | Pop | D | G7/D | D: G7/D | F4 B3 G3 D3 |
+| 32 | Pop | D# | A#/D# | D#: A#/D# | F4 D4 A#3 D#3 |
+| 32 | Pop | E | C7 | E: C7 | E4 A#3 G3 C3 |
+| 32 | Pop | F | Fm7 | F: Fm7 | G#4 D#4 C4 F3 |
+| 32 | Pop | F# | D# | F#: D# | G4 D#4 A#3 D#3 |
+| 32 | Pop | G | Gm7 | G: Gm7 | F4 D4 A#3 G3 |
+| 32 | Pop | G# | G#M9 | G#: G#M9 | G4 C4 A#3 G#3 |
+| 32 | Pop | A | G#m6 | A: G#m6 | F4 D#3 B3 G#3 |
+| 32 | Pop | A# | F7/A | A#: F7/A | F4 D#4 C3 A3 |
+| 32 | Pop | B | A#add11 | B: A#add11 | A#4 D#4 D4 A#3 |
+
+### Preset 33: Cinematic
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 33 | Cinematic | C | CM7 | C: CM7 | B3 G3 E3 C3 |
+| 33 | Cinematic | C# | F/E | C#: F/E | C4 A3 F3 E3 |
+| 33 | Cinematic | D | A#M7 | D: A#M7 | D4 A3 F3 A#2 |
+| 33 | Cinematic | D# | G | D#: G | D4 B3 G3 G2 |
+| 33 | Cinematic | E | Dm7 | E: Dm7 | F4 C4 F3 D3 |
+| 33 | Cinematic | F | C | F: C | E4 C4 G3 C3 |
+| 33 | Cinematic | F# | A#M7 | F#: A#M7 | F4 D4 A3 A#2 |
+| 33 | Cinematic | G | G | G: G | G4 D4 B3 G2 |
+| 33 | Cinematic | G# | C | G#: C | E4 C4 G3 C3 |
+| 33 | Cinematic | A | A/C# | A: A/C# | E4 C#4 A3 C#3 |
+| 33 | Cinematic | A# | Dm | A#: Dm | F4 D4 A3 D3 |
+| 33 | Cinematic | B | G/F | B: G/F | G4 D4 B3 F3 |
+
+### Preset 34: Cinematic/Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 34 | Cinematic/Synthwave | C | Csus2 | C: Csus2 | D4 G3 D3 C3 |
+| 34 | Cinematic/Synthwave | C# | Dsus2 | C#: Dsus2 | E4 A3 E3 D3 |
+| 34 | Cinematic/Synthwave | D | D#sus2 | D: D#sus2 | F4 A#3 F3 D#3 |
+| 34 | Cinematic/Synthwave | D# | Fsus2 | D#: Fsus2 | G4 C4 G3 F3 |
+| 34 | Cinematic/Synthwave | E | Gsus2 | E: Gsus2 | A4 D4 A3 G3 |
+| 34 | Cinematic/Synthwave | F | A#sus2 | F: A#sus2 | C5 F4 C4 A#3 |
+| 34 | Cinematic/Synthwave | F# | Csus2 | F#: Csus2 | D5 G4 D4 C4 |
+| 34 | Cinematic/Synthwave | G | Dsus2 | G: Dsus2 | E5 A4 E4 D4 |
+| 34 | Cinematic/Synthwave | G# | D#sus2 | G#: D#sus2 | F5 A#4 F4 D#4 |
+| 34 | Cinematic/Synthwave | A | Fsus2 | A: Fsus2 | G5 C5 G4 F4 |
+| 34 | Cinematic/Synthwave | A# | Gsus2 | A#: Gsus2 | A5 D5 A4 G4 |
+| 34 | Cinematic/Synthwave | B | A#sus2 | B: A#sus2 | C6 F5 C5 A#4 |
+
+### Preset 35: Cinematic/House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 35 | Cinematic/House | C | CM7 | C: CM7 | B4 E4 G3 C3 |
+| 35 | Cinematic/House | C# | Am7 | C#: Am7 | G4 C4 E3 A2 |
+| 35 | Cinematic/House | D | DM7 | D: DM7 | C#5 F#4 A3 D3 |
+| 35 | Cinematic/House | D# | Bm7 | D#: Bm7 | A4 D4 F#3 B2 |
+| 35 | Cinematic/House | E | EM7 | E: EM7 | D#5 G#4 B3 E3 |
+| 35 | Cinematic/House | F | C#m7 | F: C#m7 | B4 E4 G#3 C#3 |
+| 35 | Cinematic/House | F# | F#M7 | F#: F#M7 | F5 A#4 C#4 F#3 |
+| 35 | Cinematic/House | G | D#m7 | G: D#m7 | C#5 F#4 A#3 D#3 |
+| 35 | Cinematic/House | G# | G#M7 | G#: G#M7 | G5 C5 D#4 G#3 |
+| 35 | Cinematic/House | A | Fm7 | A: Fm7 | D#5 G#4 C4 F3 |
+| 35 | Cinematic/House | A# | A#M7 | A#: A#M7 | A5 D5 F4 A#3 |
+| 35 | Cinematic/House | B | Gm7 | B: Gm7 | F5 A#4 D4 G3 |
+
+### Preset 36: Cinematic
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 36 | Cinematic | C | Ebsus2/C | C: Ebsus2/C | Eb4 Bb3 F3 C3 |
+| 36 | Cinematic | C# | Fsus2/D | C#: Fsus2/D | F4 C4 G3 D3 |
+| 36 | Cinematic | D | Gsus2/E | D: Gsus2/E | G4 D4 A3 E3 |
+| 36 | Cinematic | D# | Absus2/F | D#: Absus2/F | Ab4 Eb4 Bb3 F3 |
+| 36 | Cinematic | E | Bbsus2/G | E: Bbsus2/G | Bb4 F4 C4 G3 |
+| 36 | Cinematic | F | Csus2/A | F: Csus2/A | C5 G4 D4 A3 |
+| 36 | Cinematic | F# | Dsus2/B | F#: Dsus2/B | D5 A4 E4 B3 |
+| 36 | Cinematic | G | Ebsus2/C | G: Ebsus2/C | Eb5 Bb4 F4 C4 |
+| 36 | Cinematic | G# | Fsus2/D | G#: Fsus2/D | F5 C5 G4 D4 |
+| 36 | Cinematic | A | Gsus2/E | A: Gsus2/E | G5 D5 A4 E4 |
+| 36 | Cinematic | A# | Absus2/F | A#: Absus2/F | Ab5 Eb5 Bb4 F4 |
+| 36 | Cinematic | B | Bbsus2/G | B: Bbsus2/G | Bb5 F5 C5 G4 |
+
+### Preset 37: Cinematic
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 37 | Cinematic | C | C6sus2 | C: C6sus2 | A4 D4 G3 C3 |
+| 37 | Cinematic | C# | Dsus2 | C#: Dsus2 | A4 E4 A3 D3 |
+| 37 | Cinematic | D | Emadd11 | D: Emadd11 | A4 G4 B3 E3 |
+| 37 | Cinematic | D# | Dadd9/F# | D#: Dadd9/F# | A4 E4 D4 F#3 |
+| 37 | Cinematic | E | Gadd9 | E: Gadd9 | B4 A4 D4 G3 |
+| 37 | Cinematic | F | Am7/11 | F: Am7/11 | D5 G4 C4 A3 |
+| 37 | Cinematic | F# | Bm7 | F#: Bm7 | D5 A4 F#4 B3 |
+| 37 | Cinematic | G | C6 | G: C6 | E5 A4 G4 C4 |
+| 37 | Cinematic | G# | D6 | G#: D6 | F#5 B4 A4 D4 |
+| 37 | Cinematic | A | Emadd9 | A: Emadd9 | F#5 B4 G4 E4 |
+| 37 | Cinematic | A# | E7sus4 | A#: E7sus4 | A5 D5 B4 E4 |
+| 37 | Cinematic | B | Em7b5/F | B: Em7b5/F | G5 E5 D5 F4 |
+
+### Preset 38: New Age/Cinematic
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 38 | New Age/Cinematic | C | C | C: C | E4 C4 G3 C3 |
+| 38 | New Age/Cinematic | C# | Gsus4 | C#: Gsus4 | G4 D4 C4 G3 |
+| 38 | New Age/Cinematic | D | G7sus4 | D: G7sus4 | F4 D4 C4 G3 |
+| 38 | New Age/Cinematic | D# | A#/D# | D#: A#/D# | F4 D4 A#3 D#3 |
+| 38 | New Age/Cinematic | E | C/E | E: C/E | E4 C4 G3 E3 |
+| 38 | New Age/Cinematic | F | Gsus4/F | F: Gsus4/F | D4 C4 G3 F3 |
+| 38 | New Age/Cinematic | F# | D/F# | F#: D/F# | F#4 D4 A3 F#3 |
+| 38 | New Age/Cinematic | G | C/G | G: C/G | E4 C4 G3 G2 |
+| 38 | New Age/Cinematic | G# | E/G# | G#: E/G# | E4 B3 G#3 G#2 |
+| 38 | New Age/Cinematic | A | Am | A: Am | E4 C4 A3 A2 |
+| 38 | New Age/Cinematic | A# | Fsus4 | A#: Fsus4 | F4 C4 A#3 F3 |
+| 38 | New Age/Cinematic | B | G | B: G | G4 D4 B3 B2 |
+
+### Preset 39: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 39 | Synthwave | C | C6sus4 | C: C6sus4 | A3 G3 F3 C3 |
+| 39 | Synthwave | C# | Gmadd9/D | C#: Gmadd9/D | A#3 A3 G3 D3 |
+| 39 | Synthwave | D | Edim11 | D: Edim11 | A#3 A3 G3 E3 |
+| 39 | Synthwave | D# | Fsus2/D | D#: Fsus2/D | C4 G3 F3 D3 |
+| 39 | Synthwave | E | BbM7 | E: BbM7 | D4 A#3 A3 F3 |
+| 39 | Synthwave | F | Gmadd9 | F: Gmadd9 | D4 A#3 A3 G3 |
+| 39 | Synthwave | F# | Am/G | F#: Am/G | E4 C4 A3 G3 |
+| 39 | Synthwave | G | C7/G | G: C7/G | E4 C4 A#3 G3 |
+| 39 | Synthwave | G# | A#M7 | G#: A#M7 | F4 D4 A#3 A3 |
+| 39 | Synthwave | A | Gm/A | A: Gm/A | G4 D4 A#3 A3 |
+| 39 | Synthwave | A# | C7/A# | A#: C7/A# | G4 E4 C4 A#3 |
+| 39 | Synthwave | B | A#m6 | B: A#m6 | G4 F4 C#4 A#3 |
+
+### Preset 40: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 40 | Synthwave | C | Cadd9 | C: Cadd9 | G3 E3 D3 C3 |
+| 40 | Synthwave | C# | Dadd9 | C#: Dadd9 | A3 F#3 E3 D3 |
+| 40 | Synthwave | D | D#add9 | D: D#add9 | A#3 G3 F3 D#3 |
+| 40 | Synthwave | D# | Fadd9 | D#: Fadd9 | C4 A3 G3 F3 |
+| 40 | Synthwave | E | Gadd9 | E: Gadd9 | D4 B3 A3 G3 |
+| 40 | Synthwave | F | G#add9 | F: G#add9 | D#4 C4 A#3 G#3 |
+| 40 | Synthwave | F# | A#add9 | F#: A#add9 | F4 D4 C4 A#3 |
+| 40 | Synthwave | G | Cadd9 | G: Cadd9 | G4 E4 D4 C4 |
+| 40 | Synthwave | G# | Dadd9 | G#: Dadd9 | A4 F#4 E4 D4 |
+| 40 | Synthwave | A | D#add9 | A: D#add9 | A#4 G4 F4 D#4 |
+| 40 | Synthwave | A# | Fadd9 | A#: Fadd9 | C5 A4 G4 F4 |
+| 40 | Synthwave | B | Gadd9 | B: Gadd9 | D5 B4 A4 G4 |
+
+### Preset 41: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 41 | Synthwave | C | C | C: C | C4 G3 E3 C2 |
+| 41 | Synthwave | C# | C#dim7 | C#: C#dim7 | A#3 G3 E3 C#2 |
+| 41 | Synthwave | D | Fsus2/D | D: Fsus2/D | C4 G3 F3 D2 |
+| 41 | Synthwave | D# | D#add9 | D#: D#add9 | A#3 G3 F3 D#2 |
+| 41 | Synthwave | E | Csus2/E | E: Csus2/E | C4 G3 D3 E2 |
+| 41 | Synthwave | F | FM7 | F: FM7 | C4 A3 E3 F2 |
+| 41 | Synthwave | F# | F#dim | F#: F#dim | C4 A3 F#3 F#2 |
+| 41 | Synthwave | G | Gsus4 | G: Gsus4 | C4 G3 D3 G2 |
+| 41 | Synthwave | G# | G#6 | G#: G#6 | C4 G#3 F3 G#2 |
+| 41 | Synthwave | A | Csus2/A | A: Csus2/A | C4 G3 D3 A2 |
+| 41 | Synthwave | A# | Csus2/A# | A#: Csus2/A# | C4 G3 D3 A#2 |
+| 41 | Synthwave | B | G7/B | B: G7/B | B3 G3 F3 B2 |
+
+### Preset 42: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 42 | Synthwave | C | C | C: C | C5 E4 G3 C3 |
+| 42 | Synthwave | C# | A#sus2/D# | C#: A#sus2/D# | C5 F4 A#3 D#3 |
+| 42 | Synthwave | D | A#7/G# | D: A#7/G# | A#4 F4 G#3 G#2 |
+| 42 | Synthwave | D# | G/B | D#: G/B | B4 D4 G3 B2 |
+| 42 | Synthwave | E | C | E: C | C5 E4 G3 C3 |
+| 42 | Synthwave | F | Fm | F: Fm | C5 F4 G#3 F2 |
+| 42 | Synthwave | F# | F#dim7 | F#: F#dim7 | C5 D#4 A3 F#2 |
+| 42 | Synthwave | G | C | G: C | C5 E4 G3 G2 |
+| 42 | Synthwave | G# | G#add9 | G#: G#add9 | C5 D#4 A#3 G#2 |
+| 42 | Synthwave | A | F/A | A: F/A | C5 F4 A3 A2 |
+| 42 | Synthwave | A# | A# | A#: A# | D5 F4 A#3 A#2 |
+| 42 | Synthwave | B | G7/B | B: G7/B | D5 F4 G3 B2 |
+
+### Preset 43: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 43 | Synthwave | C | Cm7 | C: Cm7 | G4 D#4 A#3 C3 |
+| 43 | Synthwave | C# | A#/C | C#: A#/C | F4 D4 A#3 C3 |
+| 43 | Synthwave | D | D#/G# | D: D#/G# | G4 D#4 A#3 G#2 |
+| 43 | Synthwave | D# | A#/G# | D#: A#/G# | F4 D4 A#3 G#2 |
+| 43 | Synthwave | E | D#/F | E: D#/F | G4 D#4 A#3 F3 |
+| 43 | Synthwave | F | A#/F | F: A#/F | F3 D4 A#3 F3 |
+| 43 | Synthwave | F# | G#add9 | F#: G#add9 | D#4 C4 A#3 G#2 |
+| 43 | Synthwave | G | A# | G: A# | F4 D4 A#3 A#2 |
+| 43 | Synthwave | G# | G#M7 | G#: G#M7 | D#4 C4 G3 G#2 |
+| 43 | Synthwave | A | Fsus2/A | A: Fsus2/A | F4 C4 G3 A2 |
+| 43 | Synthwave | A# | A#6 | A#: A#6 | F4 D4 G3 A#2 |
+| 43 | Synthwave | B | Fm7/B | B: Fm7/B | F4 D#4 G#3 B2 |
+
+### Preset 44: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 44 | Synthwave | C | Cm7 | C: Cm7 | A#4 G4 D#4 C3 |
+| 44 | Synthwave | C# | C#sus2/F | C#: C#sus2/F | G#4 D#4 C#4 F3 |
+| 44 | Synthwave | D | Gm7 | D: Gm7 | A#4 F4 D4 G3 |
+| 44 | Synthwave | D# | D# | D#: D# | A#4 D#4 G3 D#3 |
+| 44 | Synthwave | E | Csus2/E | E: Csus2/E | G4 D4 C4 E3 |
+| 44 | Synthwave | F | Fm | F: Fm | G#4 F4 C4 F3 |
+| 44 | Synthwave | F# | D#dim7 | F#: D#dim7 | A4 D#4 C4 F#3 |
+| 44 | Synthwave | G | G#sus2/G | G: G#sus2/G | A#4 D#4 G#3 G3 |
+| 44 | Synthwave | G# | Cm7 | G#: Cm7 | A#4 D#4 C4 C3 |
+| 44 | Synthwave | A | F7 | A: F7 | A4 D#4 C4 F3 |
+| 44 | Synthwave | A# | Fm7 | A#: Fm7 | G#4 D#4 C4 F3 |
+| 44 | Synthwave | B | G5 | B: G5 | G4 D4 D3 G3 |
+
+### Preset 45: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 45 | Synthwave | C | Ab | C: Ab | Ab3 Eb3 C3 |
+| 45 | Synthwave | C# | Fm | C#: Fm | Ab3 F3 C3 |
+| 45 | Synthwave | D | Gm | D: Gm | Bb3 G3 D3 |
+| 45 | Synthwave | D# | Ab | D#: Ab | C4 Ab3 Eb3 |
+| 45 | Synthwave | E | Fm | E: Fm | C4 Ab3 F3 |
+| 45 | Synthwave | F | Bb | F: Bb | D3 Bb3 F3 |
+| 45 | Synthwave | F# | Gm | F#: Gm | D4 Bb3 G3 |
+| 45 | Synthwave | G | Cm | G: Cm | Eb4 C4 G3 |
+| 45 | Synthwave | G# | Ab | G#: Ab | Eb4 C4 Ab3 |
+| 45 | Synthwave | A | Fm | A: Fm | F4 C4 Ab3 |
+| 45 | Synthwave | A# | Bb | A#: Bb | F4 D4 Bb3 |
+| 45 | Synthwave | B | Cm | B: Cm | G4 Eb4 C4 |
+
+### Preset 46: Synthwave
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 46 | Synthwave | C | C | C: C | E3 G2 C2 |
+| 46 | Synthwave | C# | D | C#: D | F#3 A2 D2 |
+| 46 | Synthwave | D | Em | D: Em | G3 B2 E2 |
+| 46 | Synthwave | D# | D | D#: D | A3 D3 F#2 |
+| 46 | Synthwave | E | G | E: G | B3 D3 G2 |
+| 46 | Synthwave | F | Am | F: Am | C4 E3 A2 |
+| 46 | Synthwave | F# | Bm | F#: Bm | D4 F#3 B2 |
+| 46 | Synthwave | G | C | G: C | E4 G3 C3 |
+| 46 | Synthwave | G# | D | G#: D | F#4 A3 D3 |
+| 46 | Synthwave | A | Em | A: Em | G4 B3 E3 |
+| 46 | Synthwave | A# | D | A#: D | A4 D4 F#3 |
+| 46 | Synthwave | B | G | B: G | B4 D4 G3 |
+
+### Preset 47: Synthwave/House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 47 | Synthwave/House | C | Cm7 | C: Cm7 | A#3 G3 D#3 C3 |
+| 47 | Synthwave/House | C# | D#M7 | C#: D#M7 | D4 A#3 G3 D#3 |
+| 47 | Synthwave/House | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 47 | Synthwave/House | D# | Fm7 | D#: Fm7 | D#4 C4 G#3 F3 |
+| 47 | Synthwave/House | E | D#M7 | E: D#M7 | D4 A#3 G3 D#3 |
+| 47 | Synthwave/House | F | Gm7 | F: Gm7 | F4 D4 A#3 G3 |
+| 47 | Synthwave/House | F# | Fm7 | F#: Fm7 | D#4 C4 G#3 F3 |
+| 47 | Synthwave/House | G | G#M7 | G: G#M7 | G4 D#4 C4 G#3 |
+| 47 | Synthwave/House | G# | Gm7 | G#: Gm7 | F4 D4 A#3 G3 |
+| 47 | Synthwave/House | A | A#7 | A: A#7 | G#4 F4 D4 A#3 |
+| 47 | Synthwave/House | A# | G#M7 | A#: G#M7 | G4 D#4 C4 G#3 |
+| 47 | Synthwave/House | B | C#/C | B: C#/C | G#4 F4 C#4 C4 |
+
+### Preset 48: Trance
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 48 | Trance | C | Cm | C: Cm | Eb4 G3 C3 C2 |
+| 48 | Trance | C# | Ab/C | C#: Ab/C | Eb4 Ab3 C3 C2 |
+| 48 | Trance | D | Bb/D | D: Bb/D | F4 Bb3 F3 D2 |
+| 48 | Trance | D# | Eb | D#: Eb | G4 Bb3 Bb2 Eb2 |
+| 48 | Trance | E | C/E | E: C/E | G4 C4 G3 E2 |
+| 48 | Trance | F | Fm | F: Fm | Ab4 C4 F3 F2 |
+| 48 | Trance | F# | F | F#: F | A4 C4 F3 F2 |
+| 48 | Trance | G | Gm | G: Gm | Bb4 D4 G3 G2 |
+| 48 | Trance | G# | Ab | G#: Ab | C4 Eb3 Ab2 Ab1 |
+| 48 | Trance | A | F7/A | A: F7/A | C4 F3 Eb3 A1 |
+| 48 | Trance | A# | Bb | A#: Bb | D4 F3 Bb2 Bb1 |
+| 48 | Trance | B | G7/B | B: G7/B | D4 G3 F3 B1 |
+
+### Preset 49: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 49 | House | C | Cm7 | C: Cm7 | Eb4 Bb3 G3 C3 |
+| 49 | House | C# | C#m7 | C#: C#m7 | E4 B3 G#3 C#3 |
+| 49 | House | D | Dm7 | D: Dm7 | F4 C4 A3 D3 |
+| 49 | House | D# | EbM7 | D#: EbM7 | G4 D4 Bb3 Eb3 |
+| 49 | House | E | Gm/E | E: Gm/E | G4 D4 Bb3 E3 |
+| 49 | House | F | Eb/F | F: Eb/F | G4 Eb4 Bb3 F3 |
+| 49 | House | F# | D7/F# | F#: D7/F# | C4 A3 D3 F#2 |
+| 49 | House | G | Gm7 | G: Gm7 | Bb3 F3 D3 G2 |
+| 49 | House | G# | AbM7 | G#: AbM7 | C4 G3 Eb3 Ab2 |
+| 49 | House | A | Ab/Bb | A: Ab/Bb | Eb4 C4 Ab3 Bb2 |
+| 49 | House | A# | BbM7 | A#: BbM7 | D4 A3 F3 Bb2 |
+| 49 | House | B | Bm7b5 | B: Bm7b5 | D4 A3 F3 B2 |
+
+### Preset 50: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 50 | House | C | Cmaj7 | C: Cmaj7 | E4 B3 G3 C3 |
+| 50 | House | C# | Dmaj7 | C#: Dmaj7 | F#4 C#4 A3 D3 |
+| 50 | House | D | Em7 | D: Em7 | G4 D4 B3 E3 |
+| 50 | House | D# | Fmaj9 | D#: Fmaj9 | G4 E4 C4 F3 |
+| 50 | House | E | Gmaj9 | E: Gmaj9 | A4 F#4 D4 G3 |
+| 50 | House | F | Eadd9/G# | F: Eadd9/G# | B4 F#4 E4 G#3 |
+| 50 | House | F# | Am7 | F#: Am7 | C5 G4 E4 A3 |
+| 50 | House | G | Bm7 | G: Bm7 | D5 A4 F#4 B3 |
+| 50 | House | G# | Cmaj9 | G#: Cmaj9 | D5 B4 G4 C4 |
+| 50 | House | A | Dm7/9 | A: Dm7/9 | E5 C5 F4 D4 |
+| 50 | House | A# | Em7 | A#: Em7 | G5 D5 B4 E4 |
+| 50 | House | B | Fmaj7 | B: Fmaj7 | A5 E5 C5 F4 |
+
+### Preset 51: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 51 | House | C | Cm7 | C: Cm7 | A#3 G3 D#3 C3 |
+| 51 | House | C# | G#/C# | C#: G#/C# | C4 G#3 D#3 C#3 |
+| 51 | House | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 51 | House | D# | A#/D# | D#: A#/D# | D4 A#3 F3 D#3 |
+| 51 | House | E | Em7 | E: Em7 | D4 B3 G3 E3 |
+| 51 | House | F | C/F | F: C/F | E4 C4 G3 F3 |
+| 51 | House | F# | F#m7 | F#: F#m7 | E4 C#4 A3 F#3 |
+| 51 | House | G | D/G | G: D/G | F#4 D4 A3 G3 |
+| 51 | House | G# | G#m7 | G#: G#m7 | F#4 D#4 B3 G#3 |
+| 51 | House | A | E/A | A: E/A | G#4 E4 B3 A3 |
+| 51 | House | A# | A#m7 | A#: A#m7 | G#4 F4 C#4 A#3 |
+| 51 | House | B | F#/B | B: F#/B | A#4 F#4 C#4 B3 |
+
+### Preset 52: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 52 | House | C | Cm7 | C: Cm7 | A#4 D#4 G3 C3 |
+| 52 | House | C# | G#M7 | C#: G#M7 | G4 C4 D#3 G#2 |
+| 52 | House | D | Dm7 | D: Dm7 | C5 F4 A3 D3 |
+| 52 | House | D# | A#M7 | D#: A#M7 | A4 D4 F3 A#2 |
+| 52 | House | E | Em7 | E: Em7 | D5 G4 B3 E3 |
+| 52 | House | F | CM7 | F: CM7 | B4 E4 G3 C3 |
+| 52 | House | F# | F#m7 | F#: F#m7 | E5 A4 C#4 F#3 |
+| 52 | House | G | DM7 | G: DM7 | C#5 F#4 A3 D3 |
+| 52 | House | G# | G#m7 | G#: G#m7 | F#5 B4 D#4 G#3 |
+| 52 | House | A | EM7 | A: EM7 | D#5 G#4 B3 E3 |
+| 52 | House | A# | A#m7 | A#: A#m7 | G#5 C#5 F4 A#3 |
+| 52 | House | B | F#M7 | B: F#M7 | F5 A#4 C#4 F#3 |
+
+### Preset 53: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 53 | House | C | Cm7/11 | C: Cm7/11 | F4 A#3 D#3 C3 |
+| 53 | House | C# | Cdim7 | C#: Cdim7 | F#4 A3 D#3 C3 |
+| 53 | House | D | C#M7/b5 | D: C#M7/b5 | G4 C4 F3 C#3 |
+| 53 | House | D# | Ddim7 | D#: Ddim7 | G#4 B3 F3 D3 |
+| 53 | House | E | Cm | E: Cm | G4 C4 G3 D#3 |
+| 53 | House | F | C#M7 | F: C#M7 | F4 C4 F3 C#3 |
+| 53 | House | F# | CM7 | F#: CM7 | E4 B3 G3 C3 |
+| 53 | House | G | Em7 | G: Em7 | G4 D4 B3 E3 |
+| 53 | House | G# | FM7 | G#: FM7 | A4 E4 C4 F3 |
+| 53 | House | A | Fm6 | A: Fm6 | G#4 D4 C4 F3 |
+| 53 | House | A# | Csus2/E | A#: Csus2/E | G4 D4 C4 E3 |
+| 53 | House | B | Fm | B: Fm | F4 C4 G#3 F3 |
+
+### Preset 54: House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 54 | House | C | CM7 | C: CM7 | B3 G3 E3 C3 |
+| 54 | House | C# | Em7 | C#: Em7 | D4 B3 G3 E3 |
+| 54 | House | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 54 | House | D# | FM7 | D#: FM7 | E4 C4 A3 F3 |
+| 54 | House | E | D#M7 | E: D#M7 | D4 A#3 G3 D#3 |
+| 54 | House | F | Gm7 | F: Gm7 | F4 D4 A#3 G3 |
+| 54 | House | F# | FM7 | F#: FM7 | E4 C4 A3 F3 |
+| 54 | House | G | Am7 | G: Am7 | G4 E4 C4 A3 |
+| 54 | House | G# | Gm7 | G#: Gm7 | F4 D4 A#3 G3 |
+| 54 | House | A | A#M7 | A: A#M7 | A4 F4 D4 A#3 |
+| 54 | House | A# | Am7 | A#: Am7 | G4 E4 C4 A3 |
+| 54 | House | B | Bm7 | B: Bm7 | A4 F#4 D4 B3 |
+
+### Preset 55: Jazz House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 55 | Jazz House | C | CM13 | C: CM13 | B4 A4 E4 C4 |
+| 55 | Jazz House | C# | CM7#5 | C#: CM7#5 | B4 G#4 E4 C4 |
+| 55 | Jazz House | D | Dm7b5 | D: Dm7b5 | C5 Ab4 F4 D4 |
+| 55 | Jazz House | D# | G7 | D#: G7 | B4 G4 F4 D4 |
+| 55 | Jazz House | E | Cadd9/E | E: Cadd9/E | D5 C5 G4 E4 |
+| 55 | Jazz House | F | Fadd9 | F: Fadd9 | C5 A4 G4 F4 |
+| 55 | Jazz House | F# | FmAdd9 | F#: FmAdd9 | C5 Ab4 G4 F4 |
+| 55 | Jazz House | G | G9 | G: G9 | F5 B4 A4 G4 |
+| 55 | Jazz House | G# | E7/G# | G#: E7/G# | E5 D5 B4 G#4 |
+| 55 | Jazz House | A | Am9/11 | A: Am9/11 | B5 D5 C5 A4 |
+| 55 | Jazz House | A# | Gm11/Bb | A#: Gm11/Bb | G5 D5 C5 Bb4 |
+| 55 | Jazz House | B | CM7#5/G# | B: CM7#5/G# | E5 C5 B4 G#4 |
+
+### Preset 56: Jazz House
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 56 | Jazz House | C | Cm7 | C: Cm7 | Eb5 Bb4 C4 G3 |
+| 56 | Jazz House | C# | Db6 | C#: Db6 | F5 Bb4 Db4 Ab3 |
+| 56 | Jazz House | D | Dm7 | D: Dm7 | F5 C5 D4 A3 |
+| 56 | Jazz House | D# | Dm7b5 | D#: Dm7b5 | F5 C5 D4 Ab3 |
+| 56 | Jazz House | E | EbM7 | E: EbM7 | G5 D5 Eb4 Bb3 |
+| 56 | Jazz House | F | Fm7 | F: Fm7 | Ab5 Eb5 F4 C4 |
+| 56 | Jazz House | F# | Gb6 | F#: Gb6 | Bb5 Eb5 Gb4 Db4 |
+| 56 | Jazz House | G | Gm7 | G: Gm7 | Bb5 F5 G4 D4 |
+| 56 | Jazz House | G# | Ab6 | G#: Ab6 | C6 F5 Ab4 Eb4 |
+| 56 | Jazz House | A | AbM7 | A: AbM7 | C6 G5 Ab4 Eb4 |
+| 56 | Jazz House | A# | Am7 | A#: Am7 | C6 G5 A4 E4 |
+| 56 | Jazz House | B | BbM7 | B: BbM7 | D6 A5 Bb4 F4 |
+
+### Preset 57: House/Techno
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 57 | House/Techno | C | C5b9 | C: C5b9 | C4 G3 C#3 C3 |
+| 57 | House/Techno | C# | DbM7 | C#: DbM7 | C4 G#3 F3 C#3 |
+| 57 | House/Techno | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 57 | House/Techno | D# | Ebsus11 | D#: Ebsus11 | C#4 A#3 G#3 D#3 |
+| 57 | House/Techno | E | EM7#11 | E: EM7#11 | D#4 A#3 G#3 E3 |
+| 57 | House/Techno | F | Fm9 | F: Fm9 | C4 G#3 G3 F3 |
+| 57 | House/Techno | F# | GbM7#11 | F#: GbM7#11 | F4 C3 A#3 F#3 |
+| 57 | House/Techno | G | Gm7 | G: Gm7 | F4 D3 A#3 G3 |
+| 57 | House/Techno | G# | AbM7#11 | G#: AbM7#11 | G4 D4 C4 G#3 |
+| 57 | House/Techno | A | A7alt | A: A7alt | G4 C#4 C4 A3 |
+| 57 | House/Techno | A# | Bb5add9/b13 | A#: Bb5add9/b13 | F4 C4 F#3 A#2 |
+| 57 | House/Techno | B | C7sus4 | B: C7sus4 | A#3 G3 F3 C3 |
+
+### Preset 58: Techno
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 58 | Techno | C | Cm7 | C: Cm7 | G4 D#4 A#3 C3 |
+| 58 | Techno | C# | A#m/C# | C#: A#m/C# | F4 C#4 A#3 C#3 |
+| 58 | Techno | D | A#/D | D: A#/D | F4 D4 A#3 D3 |
+| 58 | Techno | D# | D# | D#: D# | G4 D#4 A#3 D#3 |
+| 58 | Techno | E | C/E | E: C/E | G4 E4 C4 E2 |
+| 58 | Techno | F | Cm/F | F: Cm/F | G4 D#4 C4 F2 |
+| 58 | Techno | F# | D/F# | F#: D/F# | A4 F#4 D4 F#2 |
+| 58 | Techno | G | G | G: G | G4 D4 B3 G2 |
+| 58 | Techno | G# | G#M7 | G#: G#M7 | G4 D#4 C4 G#2 |
+| 58 | Techno | A | Csus4/A | A: Csus4/A | G4 F4 C4 A2 |
+| 58 | Techno | A# | D#/A# | A#: D#/A# | G4 D#4 A#3 A#2 |
+| 58 | Techno | B | G/B | B: G/B | G4 D4 B3 B2 |
+
+### Preset 59: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 59 | EDM | C | CM9 | C: CM9 | B3 A3 D3 C3 |
+| 59 | EDM | C# | C6 | C#: C6 | F#3 B3 E3 D#3 |
+| 59 | EDM | D | Dm9 | D: Dm9 | C#4 B3 E3 D3 |
+| 59 | EDM | D# | Dm6 | D#: Dm6 | G#4 C#4 F#3 F3 |
+| 59 | EDM | E | EM9 | E: EM9 | D#4 C#4 F#3 E3 |
+| 59 | EDM | F | FM9 | F: FM9 | E4 D4 G3 F3 |
+| 59 | EDM | F# | F6 | F#: F6 | B4 E4 A3 G#3 |
+| 59 | EDM | G | GM9 | G: GM9 | F#4 E4 A3 G3 |
+| 59 | EDM | G# | G6 | G#: G6 | C#4 F#4 B3 A#3 |
+| 59 | EDM | A | Am9 | A: Am9 | G#5 F#4 B3 A3 |
+| 59 | EDM | A# | Am6 | A#: Am6 | D#5 G#4 C#4 C4 |
+| 59 | EDM | B | Bm9 | B: Bm9 | A#5 G#4 C#4 B3 |
+
+### Preset 60: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 60 | EDM | C | CM13(no 3) | C: CM13(no 3) | B3 A3 D3 C3 |
+| 60 | EDM | C# | EM9(no 3) | C#: EM9(no 3) | F#4 B3 E3 D#3 |
+| 60 | EDM | D | DM13(no 3) | D: DM13(no 3) | C#4 B3 E3 D3 |
+| 60 | EDM | D# | F#M9(no 3) | D#: F#M9(no 3) | G#4 C#4 F#3 F3 |
+| 60 | EDM | E | EM13(no 3) | E: EM13(no 3) | D#4 C#4 F#3 E3 |
+| 60 | EDM | F | FM13(no3) | F: FM13(no3) | E4 D4 G3 F3 |
+| 60 | EDM | F# | AM9(no3) | F#: AM9(no3) | B4 E4 A3 G#3 |
+| 60 | EDM | G | GM13(no3) | G: GM13(no3) | F#4 E4 A3 G3 |
+| 60 | EDM | G# | BM9(no3) | G#: BM9(no3) | C#5 F#4 B3 A#3 |
+| 60 | EDM | A | AM13(no3) | A: AM13(no3) | G#4 F#4 B3 A3 |
+| 60 | EDM | A# | C#M9(no 3) | A#: C#M9(no 3) | D#5 G#4 C#4 C4 |
+| 60 | EDM | B | BM13(no3) | B: BM13(no3) | A#4 G#4 C#4 B3 |
+
+### Preset 61: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 61 | EDM | C | Csus9/13 | C: Csus9/13 | A4 D4 G3 C3 |
+| 61 | EDM | C# | C6 | C#: C6 | E5 A4 G3 C3 |
+| 61 | EDM | D | Dsus9/13 | D: Dsus9/13 | B4 E4 A3 D3 |
+| 61 | EDM | D# | D6 | D#: D6 | F#5 B4 A3 D3 |
+| 61 | EDM | E | Esus9/13 | E: Esus9/13 | C#5 F#4 B3 E3 |
+| 61 | EDM | F | Fsus9/13 | F: Fsus9/13 | D5 G4 C4 F3 |
+| 61 | EDM | F# | F6 | F#: F6 | A4 D5 C4 F3 |
+| 61 | EDM | G | Gsus9/13 | G: Gsus9/13 | E5 A4 D4 G3 |
+| 61 | EDM | G# | G6 | G#: G6 | B4 E4 D4 G3 |
+| 61 | EDM | A | Asus9/13 | A: Asus9/13 | F#5 B4 E4 A3 |
+| 61 | EDM | A# | A6 | A#: A6 | C#5 F#4 E4 A3 |
+| 61 | EDM | B | Bsus9/13 | B: Bsus9/13 | G#5 C#5 F#4 B3 |
+
+### Preset 62: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 62 | EDM | C | CM13 | C: CM13 | E4 B3 A3 C3 |
+| 62 | EDM | C# | C#sus9 | C#: C#sus9 | D#4 A#3 F#3 C#3 |
+| 62 | EDM | D | DM13 | D: DM13 | F#4 C#4 B3 D3 |
+| 62 | EDM | D# | D#sus9 | D#: D#sus9 | F4 A#3 G#3 D#3 |
+| 62 | EDM | E | EM13 | E: EM13 | G#4 D#4 C#4 E3 |
+| 62 | EDM | F | FM13 | F: FM13 | A4 E4 D4 F3 |
+| 62 | EDM | F# | F#sus9 | F#: F#sus9 | G#4 C#4 B3 F#3 |
+| 62 | EDM | G | GMaj13 | G: GMaj13 | B4 F#4 E4 G3 |
+| 62 | EDM | G# | Absus9 | G#: Absus9 | A#4 D#4 C#4 G#3 |
+| 62 | EDM | A | AM13 | A: AM13 | C#5 G#4 F#4 A3 |
+| 62 | EDM | A# | Bbsus9 | A#: Bbsus9 | C5 F4 D#4 A#3 |
+| 62 | EDM | B | BM13 | B: BM13 | D#5 A#4 G#4 B3 |
+
+### Preset 63: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 63 | EDM | C | CM7 | C: CM7 | E4 B3 C3 G2 |
+| 63 | EDM | C# | Dbm7 | C#: Dbm7 | E4 B3 C#3 G#2 |
+| 63 | EDM | D | Dm7 | D: Dm7 | F4 C4 D3 A2 |
+| 63 | EDM | D# | Eb6 | D#: Eb6 | G4 C4 D#3 A#2 |
+| 63 | EDM | E | Em7 | E: Em7 | G4 D4 E3 B2 |
+| 63 | EDM | F | FM7 | F: FM7 | A4 E4 F3 C3 |
+| 63 | EDM | F# | Gbm7 | F#: Gbm7 | A4 E4 F#3 C#3 |
+| 63 | EDM | G | GM7 | G: GM7 | B4 F#4 G3 D3 |
+| 63 | EDM | G# | Abm7 | G#: Abm7 | B4 F#4 G#3 D#3 |
+| 63 | EDM | A | Am7 | A: Am7 | C5 G4 A3 E3 |
+| 63 | EDM | A# | Bb6 | A#: Bb6 | D5 G4 B3 F3 |
+| 63 | EDM | B | Bm7 | B: Bm7 | D5 A4 B3 F#3 |
+
+### Preset 64: EDM
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 64 | EDM | C | C6 | C: C6 | E4 A3 G3 C3 |
+| 64 | EDM | C# | AM7 | C#: AM7 | E4 A3 G#3 C#3 |
+| 64 | EDM | D | D6 | D: D6 | F#4 B3 A3 D3 |
+| 64 | EDM | D# | BM7 | D#: BM7 | F#4 B3 A#3 D#3 |
+| 64 | EDM | E | E6 | E: E6 | G#4 C#4 B3 E3 |
+| 64 | EDM | F | F6 | F: F6 | A4 D4 C4 F3 |
+| 64 | EDM | F# | DM7 | F#: DM7 | A4 D4 C#4 F#3 |
+| 64 | EDM | G | G6 | G: G6 | B4 E4 D4 G3 |
+| 64 | EDM | G# | EM7 | G#: EM7 | B4 E4 D#4 G#3 |
+| 64 | EDM | A | A6 | A: A6 | C#5 F#4 E4 A3 |
+| 64 | EDM | A# | GbM7 | A#: GbM7 | C#5 F#4 F4 A#3 |
+| 64 | EDM | B | B6 | B: B6 | D#5 G#4 F#4 B3 |
+
+### Preset 65: Gospel/R&B
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 65 | Gospel/R&B | C | G/C | C: G/C | G4 D4 B3 C3 |
+| 65 | Gospel/R&B | C# | C#dim7 | C#: C#dim7 | G4 E4 A#3 C#3 |
+| 65 | Gospel/R&B | D | Dm7b5 | D: Dm7b5 | F4 C4 Ab3 D3 |
+| 65 | Gospel/R&B | D# | D#dim7 | D#: D#dim7 | F#4 C4 A3 D#3 |
+| 65 | Gospel/R&B | E | Em7 | E: Em7 | G4 D4 B3 E3 |
+| 65 | Gospel/R&B | F | Fm11 | F: Fm11 | Eb4 Bb3 Ab3 F2 |
+| 65 | Gospel/R&B | F# | F#dim7 | F#: F#dim7 | D#4 A3 C3 F#2 |
+| 65 | Gospel/R&B | G | Gm7b13 | G: Gm7b13 | Eb4 Bb3 F3 G2 |
+| 65 | Gospel/R&B | G# | G#M9 | G#: G#M9 | G4 C4 A#3 G#2 |
+| 65 | Gospel/R&B | A | Am7/b13 | A: Am7/b13 | F4 C3 G3 A2 |
+| 65 | Gospel/R&B | A# | A#m7 add 13 | A#: A#m7 add 13 | G4 C#4 G#3 A#2 |
+| 65 | Gospel/R&B | B | Bm7/b13 | B: Bm7/b13 | G4 D3 A3 B2 |
+
+### Preset 66: Gospel/R&B
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 66 | Gospel/R&B | C | Cm7/b13 | C: Cm7/b13 | F4 Bb3 Ab3 C3 |
+| 66 | Gospel/R&B | C# | C#M13 | C#: C#M13 | F4 C4 A#3 C#3 |
+| 66 | Gospel/R&B | D | Dm7/b13 | D: Dm7/b13 | F4 C4 Bb3 D3 |
+| 66 | Gospel/R&B | D# | D#m11 | D#: D#m11 | F#4 C#4 G#3 D#3 |
+| 66 | Gospel/R&B | E | D/E | E: D/E | F#4 D4 A3 E3 |
+| 66 | Gospel/R&B | F | G#m/F | F: G#m/F | G#4 D#4 B3 F3 |
+| 66 | Gospel/R&B | F# | F#6 | F#: F#6 | A#4 D#4 C#4 F#3 |
+| 66 | Gospel/R&B | G | A#m/G | G: A#m/G | A#4 F4 C#4 G3 |
+| 66 | Gospel/R&B | G# | G#m11 | G#: G#m11 | B4 F#4 C#4 G#3 |
+| 66 | Gospel/R&B | A | AM9 | A: AM9 | B4 E4 C#4 A3 |
+| 66 | Gospel/R&B | A# | A#7/b13 | A#: A#7/b13 | G#4 F#4 D4 A#3 |
+| 66 | Gospel/R&B | B | F#/B | B: F#/B | A#4 F#4 C#4 B3 |
+
+### Preset 67: Gospel/R&B
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 67 | Gospel/R&B | C | D | C: D | D4 A3 F#3 D2 |
+| 67 | Gospel/R&B | C# | C/D | C#: C/D | C4 G3 E3 D2 |
+| 67 | Gospel/R&B | D | D/E | D: D/E | D4 A3 F#3 E2 |
+| 67 | Gospel/R&B | D# | Dm/F | D#: Dm/F | D4 A3 F3 F2 |
+| 67 | Gospel/R&B | E | Dsus2/F# | E: Dsus2/F# | D4 A3 E3 F#2 |
+| 67 | Gospel/R&B | F | Gadd9 | F: Gadd9 | D4 B3 A3 G2 |
+| 67 | Gospel/R&B | F# | E/G# | F#: E/G# | E4 B3 G#3 G#2 |
+| 67 | Gospel/R&B | G | A | G: A | E4 C#4 A3 A1 |
+| 67 | Gospel/R&B | G# | A#dim7 | G#: A#dim7 | C#4 G3 E3 A#1 |
+| 67 | Gospel/R&B | A | Bm7 | A: Bm7 | D4 A3 F#3 B1 |
+| 67 | Gospel/R&B | A# | D/C | A#: D/C | D4 A3 F#3 C2 |
+| 67 | Gospel/R&B | B | C#dim | B: C#dim | C#4 G3 E3 C#2 |
+
+### Preset 68: Lofi R&B
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 68 | Lofi R&B | C | Cmadd9 | C: Cmadd9 | D#4 D4 G3 C3 |
+| 68 | Lofi R&B | C# | Abadd9/C | C#: Abadd9/C | D#4 A#3 G#3 C3 |
+| 68 | Lofi R&B | D | Bb7/D | D: Bb7/D | F4 A#3 G#3 D3 |
+| 68 | Lofi R&B | D# | EbM9 | D#: EbM9 | D4 G3 F3 D#3 |
+| 68 | Lofi R&B | E | Eb7/b9 | E: Eb7/b9 | C#4 G3 E3 D#3 |
+| 68 | Lofi R&B | F | Fm9 | F: Fm9 | D#4 G#3 G3 F3 |
+| 68 | Lofi R&B | F# | GbM6/9 | F#: GbM6/9 | D#4 A#3 G#3 F#3 |
+| 68 | Lofi R&B | G | Gm7 | G: Gm7 | F4 D4 A#3 G3 |
+| 68 | Lofi R&B | G# | Eb/Ab | G#: Eb/Ab | G4 D#4 A#3 G#3 |
+| 68 | Lofi R&B | A | Fsus4/A | A: Fsus4/A | F4 C4 A#3 A3 |
+| 68 | Lofi R&B | A# | Bbsus | A#: Bbsus | F4 D#4 D4 A#3 |
+| 68 | Lofi R&B | B | Bbsus4/b9 | B: Bbsus4/b9 | A#4 D#4 B3 A#3 |
+
+### Preset 69: Lofi R&B
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 69 | Lofi R&B | C | Ab7/C | C: Ab7/C | G#3 F#3 D#3 C3 |
+| 69 | Lofi R&B | C# | C#m11 | C#: C#m11 | B3 F#3 E3 C#3 |
+| 69 | Lofi R&B | D | DM9 | D: DM9 | C#4 F#3 E3 D3 |
+| 69 | Lofi R&B | D# | Bsus4/Eb | D#: Bsus4/Eb | B3 F#3 E3 D#3 |
+| 69 | Lofi R&B | E | EM add2 | E: EM add2 | B3 G#3 F#3 E3 |
+| 69 | Lofi R&B | F | DM7#11 | F: DM7#11 | C#4 G#3 F#3 D3 |
+| 69 | Lofi R&B | F# | F#m11 | F#: F#m11 | E3 B2 A2 F#2 |
+| 69 | Lofi R&B | G | G6 | G: G6 | E3 B2 A2 G2 |
+| 69 | Lofi R&B | G# | Abm7 | G#: Abm7 | F#3 D#3 B2 G#2 |
+| 69 | Lofi R&B | A | AM7add6 | A: AM7add6 | G#3 F#3 C#3 A2 |
+| 69 | Lofi R&B | A# | F#add9/A# | A#: F#add9/A# | G#3 F#3 C#3 A#2 |
+| 69 | Lofi R&B | B | BM add4 | B: BM add4 | F#3 E3 D#3 B2 |
+
+### Preset 70: Funk
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 70 | Funk | C | C9 | C: C9 | D4 Bb3 E3 C2 |
+| 70 | Funk | C# | C/D | C#: C/D | E4 C4 G3 D2 |
+| 70 | Funk | D | D7b9 | D: D7b9 | Eb4 C4 F#3 D2 |
+| 70 | Funk | D# | EbM7 | D#: EbM7 | D4 Bb3 G3 Eb2 |
+| 70 | Funk | E | Em7b13 | E: Em7b13 | D4 C4 G3 E2 |
+| 70 | Funk | F | Eb/F | F: Eb/F | Eb4 Bb3 G3 F2 |
+| 70 | Funk | F# | F#13 | F#: F#13 | Eb4 Bb3 E3 F#2 |
+| 70 | Funk | G | G7 | G: G7 | D4 B3 F3 G2 |
+| 70 | Funk | G# | Abm6 add b13 | G#: Abm6 add b13 | E4 B3 F3 Ab2 |
+| 70 | Funk | A | Am7 | A: Am7 | E4 C4 G3 A2 |
+| 70 | Funk | A# | Bm7 | A#: Bm7 | F#4 D4 A3 B2 |
+| 70 | Funk | B | B7 | B: B7 | F#4 D#4 A3 B2 |
+
+### Preset 71: Funk
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 71 | Funk | C | C7alt | C: C7alt | Eb4 Ab3 E3 C3 |
+| 71 | Funk | C# | DbM7 | C#: DbM7 | F4 C4 Ab3 Db3 |
+| 71 | Funk | D | D7alt | D: D7alt | F4 C4 F#3 D3 |
+| 71 | Funk | D# | Eb7 | D#: Eb7 | G4 Db4 Bb3 Eb3 |
+| 71 | Funk | E | C7/E | E: C7/E | G4 C4 Bb3 E3 |
+| 71 | Funk | F | F7alt | F: F7alt | Ab4 Eb4 A3 F3 |
+| 71 | Funk | F# | F11sus2 | F#: F11sus2 | G4 Eb4 Bb3 F3 |
+| 71 | Funk | G | Gm7b5 | G: Gm7b5 | F4 Db4 Bb3 G3 |
+| 71 | Funk | G# | Ab9 | G#: Ab9 | Bb4 Gb4 C4 Ab3 |
+| 71 | Funk | A | Bb9sus | A: Bb9sus | Ab4 Eb4 C4 Bb3 |
+| 71 | Funk | A# | Bb7add9 | A#: Bb7add9 | Ab4 D4 C4 Bb3 |
+| 71 | Funk | B | C11sus2 | B: C11sus2 | D4 Bb3 F3 C3 |
+
+### Preset 72: Neo Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 72 | Neo Soul | C | Cm9 | C: Cm9 | D4 A#3 D#3 C3 |
+| 72 | Neo Soul | C# | AbM7 | C#: AbM7 | C4 G#3 G3 D#3 |
+| 72 | Neo Soul | D | Dm7 | D: Dm7 | C4 A3 F3 D3 |
+| 72 | Neo Soul | D# | EbDimM7 | D#: EbDimM7 | D4 A3 F#3 D#3 |
+| 72 | Neo Soul | E | EbM7 | E: EbM7 | D4 A#3 G3 D#3 |
+| 72 | Neo Soul | F | Fm7 | F: Fm7 | D#4 C4 G#3 F3 |
+| 72 | Neo Soul | F# | CM7#5 | F#: CM7#5 | E4 C4 G#3 G3 |
+| 72 | Neo Soul | G | Gm7 | G: Gm7 | F4 D4 A#3 G3 |
+| 72 | Neo Soul | G# | G7#5 | G#: G7#5 | F4 D#4 B3 G3 |
+| 72 | Neo Soul | A | AbM7 | A: AbM7 | G4 D#4 C4 G#3 |
+| 72 | Neo Soul | A# | Fm7b5/B | A#: Fm7b5/B | G#4 F4 D#4 B3 |
+| 72 | Neo Soul | B | Bb13/D | B: Bb13/D | G4 A#3 G#3 D3 |
+
+### Preset 73: Neo Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 73 | Neo Soul | C | Cm7 | C: Cm7 | Bb4 G4 Eb4 C4 |
+| 73 | Neo Soul | C# | C#dim7 | C#: C#dim7 | A#4 G4 E4 C#4 |
+| 73 | Neo Soul | D | Fm7 | D: Fm7 | Ab4 F4 Eb4 C4 |
+| 73 | Neo Soul | D# | Fm7/b5 | D#: Fm7/b5 | Ab4 F4 Eb4 B3 |
+| 73 | Neo Soul | E | EbM7 | E: EbM7 | Bb4 G4 Eb4 D4 |
+| 73 | Neo Soul | F | Cm7/Eb | F: Cm7/Eb | C5 Bb4 G4 Eb4 |
+| 73 | Neo Soul | F# | Edim | F#: Edim | Db5 Bb4 G4 E4 |
+| 73 | Neo Soul | G | AbM7 | G: AbM7 | C5 Ab4 G4 Eb4 |
+| 73 | Neo Soul | G# | Fm7 | G#: Fm7 | Eb5 C5 Ab4 F4 |
+| 73 | Neo Soul | A | AbM13 | A: AbM13 | F5 C5 Ab4 G4 |
+| 73 | Neo Soul | A# | Bb13 | A#: Bb13 | G5 D5 Bb4 Ab4 |
+| 73 | Neo Soul | B | Bb6 | B: Bb6 | G5 F5 D5 Bb4 |
+
+### Preset 74: Neo Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 74 | Neo Soul | C | Em7/D | C: Em7/D | B3 G3 E3 D3 |
+| 74 | Neo Soul | C# | Gm7b5/C# | C#: Gm7b5/C# | A#3 G3 F3 C#3 |
+| 74 | Neo Soul | D | FM7/E | D: FM7/E | C4 A3 F3 E3 |
+| 74 | Neo Soul | D# | DMb7/D# | D#: DMb7/D# | D4 A3 F#3 D#3 |
+| 74 | Neo Soul | E | GM7/F# | E: GM7/F# | D4 B3 G3 F#3 |
+| 74 | Neo Soul | F | Edim7 | F: Edim7 | C#4 A#3 G3 E3 |
+| 74 | Neo Soul | F# | Cadd13/E | F#: Cadd13/E | C4 A3 G3 E3 |
+| 74 | Neo Soul | G | E | G: E | E4 B3 G#3 E3 |
+| 74 | Neo Soul | G# | Gaddb9/G# | G#: Gaddb9/G# | G4 D4 B3 G#3 |
+| 74 | Neo Soul | A | Am9 | A: Am9 | G4 C4 B3 A3 |
+| 74 | Neo Soul | A# | Dm7 | A#: Dm7 | F4 C4 F3 D3 |
+| 74 | Neo Soul | B | Emb9/F | B: Emb9/F | E4 B3 G3 F3 |
+
+### Preset 75: Neo Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 75 | Neo Soul | C | CM7 | C: CM7 | B4 E4 C4 G3 |
+| 75 | Neo Soul | C# | C#m7 | C#: C#m7 | B4 E4 C#4 G#3 |
+| 75 | Neo Soul | D | Dm7 | D: Dm7 | C5 F4 D4 A3 |
+| 75 | Neo Soul | D# | EbM7 | D#: EbM7 | D5 G4 Eb4 Bb3 |
+| 75 | Neo Soul | E | Em7 | E: Em7 | D5 G4 E4 B3 |
+| 75 | Neo Soul | F | FM7 | F: FM7 | E5 A4 F4 C4 |
+| 75 | Neo Soul | F# | Gb7 | F#: Gb7 | E5 Bb4 Gb4 Db4 |
+| 75 | Neo Soul | G | GM7 | G: GM7 | F#5 B4 G4 D4 |
+| 75 | Neo Soul | G# | AbM7 | G#: AbM7 | G5 C5 Ab4 Eb4 |
+| 75 | Neo Soul | A | Am7 | A: Am7 | G5 C5 A4 E4 |
+| 75 | Neo Soul | A# | BbM7 | A#: BbM7 | A5 D5 Bb4 F4 |
+| 75 | Neo Soul | B | Bm7 | B: Bm7 | A5 D5 B4 F#4 |
+
+### Preset 76: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 76 | Neo-Soul | C | CM7sus2 | C: CM7sus2 | B3 G3 D3 C3 |
+| 76 | Neo-Soul | C# | Gadd9/B | C#: Gadd9/B | D4 A3 G3 B2 |
+| 76 | Neo-Soul | D | DM7sus2 | D: DM7sus2 | C#4 A3 E3 D3 |
+| 76 | Neo-Soul | D# | E6sus4/C# | D#: E6sus4/C# | E4 B3 A3 C#3 |
+| 76 | Neo-Soul | E | EM7sus2 | E: EM7sus2 | D#4 B3 F#3 E3 |
+| 76 | Neo-Soul | F | F#6sus4/D# | F: F#6sus4/D# | F#4 C#4 B3 D#3 |
+| 76 | Neo-Soul | F# | F#M7sus2 | F#: F#M7sus2 | F4 C#4 G#3 F#3 |
+| 76 | Neo-Soul | G | G#6sus4/F | G: G#6sus4/F | G#4 D#4 C#4 F3 |
+| 76 | Neo-Soul | G# | G#M7sus2 | G#: G#M7sus2 | G4 D#4 A#3 G#3 |
+| 76 | Neo-Soul | A | A#6sus4/G | A: A#6sus4/G | A#4 F4 D#4 G3 |
+| 76 | Neo-Soul | A# | A#M7sus2 | A#: A#M7sus2 | A4 F4 C4 A#3 |
+| 76 | Neo-Soul | B | Fadd9/A | B: Fadd9/A | C5 G4 F4 A3 |
+
+### Preset 77: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 77 | Neo-Soul | C | CM7 | C: CM7 | E4 B3 G3 C3 |
+| 77 | Neo-Soul | C# | C#m7 | C#: C#m7 | E4 B3 G#3 C#3 |
+| 77 | Neo-Soul | D | DM7 | D: DM7 | F#4 C#4 A3 D3 |
+| 77 | Neo-Soul | D# | D#m7 | D#: D#m7 | F#4 C#4 A#3 D#3 |
+| 77 | Neo-Soul | E | EM7 | E: EM7 | G#4 D#4 B3 E3 |
+| 77 | Neo-Soul | F | Fm7 | F: Fm7 | G#4 D#4 C4 F3 |
+| 77 | Neo-Soul | F# | F#M7 | F#: F#M7 | A#4 F4 C#4 F#3 |
+| 77 | Neo-Soul | G | Gm7 | G: Gm7 | A#4 F4 D4 G3 |
+| 77 | Neo-Soul | G# | AbM7 | G#: AbM7 | C5 G4 D#4 G#3 |
+| 77 | Neo-Soul | A | Am7 | A: Am7 | C5 G4 E4 A3 |
+| 77 | Neo-Soul | A# | BbM7 | A#: BbM7 | D5 A4 F4 A#3 |
+| 77 | Neo-Soul | B | Bm7 | B: Bm7 | D5 A4 F#4 B3 |
+
+### Preset 78: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 78 | Neo-Soul | C | C11sus | C: C11sus | Bb4 F4 D4 C4 |
+| 78 | Neo-Soul | C# | A7/C# | C#: A7/C# | A4 E4 G3 C#3 |
+| 78 | Neo-Soul | D | Dm7 | D: Dm7 | F4 C4 A3 D3 |
+| 78 | Neo-Soul | D# | EbM7 | D#: EbM7 | D4 Bb3 G3 Eb3 |
+| 78 | Neo-Soul | E | C7/E | E: C7/E | C4 Bb3 G3 E3 |
+| 78 | Neo-Soul | F | F6 | F: F6 | D4 C4 A3 F3 |
+| 78 | Neo-Soul | F# | D7/F# | F#: D7/F# | D4 C4 A3 F#3 |
+| 78 | Neo-Soul | G | Gdim7 | G: Gdim7 | E4 Db4 Bb3 G3 |
+| 78 | Neo-Soul | G# | E7/G# | G#: E7/G# | E4 D4 B3 G#3 |
+| 78 | Neo-Soul | A | F6/A | A: F6/A | F4 D4 C4 A3 |
+| 78 | Neo-Soul | A# | Bb6 | A#: Bb6 | G4 F4 D4 Bb3 |
+| 78 | Neo-Soul | B | Bm7b5 | B: Bm7b5 | A4 F4 D4 B3 |
+
+### Preset 79: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 79 | Neo-Soul | C | Ab/C | C: Ab/C | Ab3 Eb3 C3 |
+| 79 | Neo-Soul | C# | Db | C#: Db | Ab3 F3 Db3 |
+| 79 | Neo-Soul | D | Bb/D | D: Bb/D | Bb3 F3 D3 |
+| 79 | Neo-Soul | D# | Ebm | D#: Ebm | Bb3 Gb3 Eb3 |
+| 79 | Neo-Soul | E | C/E | E: C/E | C4 G3 E3 |
+| 79 | Neo-Soul | F | Db/F | F: Db/F | Db4 Ab3 F3 |
+| 79 | Neo-Soul | F# | Gb | F#: Gb | Db4 Bb3 Gb3 |
+| 79 | Neo-Soul | G | Eb/G | G: Eb/G | Eb4 Bb3 G3 |
+| 79 | Neo-Soul | G# | Db/Ab | G#: Db/Ab | F4 Db4 Ab3 |
+| 79 | Neo-Soul | A | F7/A | A: F7/A | F4 Eb4 A3 |
+| 79 | Neo-Soul | A# | Ebm/Bb | A#: Ebm/Bb | Gb4 Eb4 Bb3 |
+| 79 | Neo-Soul | B | B | B: B | F#4 D#4 B3 |
+
+### Preset 80: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 80 | Neo-Soul | C | Cm7b5 | C: Cm7b5 | D#4 A#3 F#3 C3 |
+| 80 | Neo-Soul | C# | Db7sus | C#: Db7sus | F#4 D#4 B3 C#3 |
+| 80 | Neo-Soul | D | Bbadd2/D | D: Bbadd2/D | F4 C4 A#3 D3 |
+| 80 | Neo-Soul | D# | Ebm7 | D#: Ebm7 | F#4 C#4 A#3 D#3 |
+| 80 | Neo-Soul | E | EM7 | E: EM7 | G#4 D#4 B3 E3 |
+| 80 | Neo-Soul | F | Fmb6 | F: Fmb6 | G#4 C#4 C4 F3 |
+| 80 | Neo-Soul | F# | GbM9 | F#: GbM9 | F4 C#4 G#3 F#3 |
+| 80 | Neo-Soul | G | Ebadd9/G | G: Ebadd9/G | F4 D#4 A#3 G3 |
+| 80 | Neo-Soul | G# | Ab7sus | G#: Ab7sus | F#4 C#4 A#3 G#3 |
+| 80 | Neo-Soul | A | AdimM7 | A: AdimM7 | G#4 D#4 C4 A3 |
+| 80 | Neo-Soul | A# | Bbm9 | A#: Bbm9 | G#4 C#4 C4 A#3 |
+| 80 | Neo-Soul | B | Gb/B | B: Gb/B | A#4 F#4 C#4 B3 |
+
+### Preset 81: Neo-Soul
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 81 | Neo-Soul | C | C7alt | C: C7alt | Eb3 Ab3 E3 C3 |
+| 81 | Neo-Soul | C# | DbM7add6 | C#: DbM7add6 | C4 Bb3 F3 Db3 |
+| 81 | Neo-Soul | D | Bb7/D | D: Bb7/D | Bb3 Ab3 F3 D3 |
+| 81 | Neo-Soul | D# | Db/Eb | D#: Db/Eb | Ab3 F3 Db3 Eb2 |
+| 81 | Neo-Soul | E | Edim7 | E: Edim7 | G3 Db3 Bb2 E2 |
+| 81 | Neo-Soul | F | Fm9 | F: Fm9 | G3 Eb3 Ab2 F2 |
+| 81 | Neo-Soul | F# | Gb6/9 | F#: Gb6/9 | Ab3 Eb3 Bb2 Gb2 |
+| 81 | Neo-Soul | G | Gm7b5 | G: Gm7b5 | C4 F3 Db3 G2 |
+| 81 | Neo-Soul | G# | Eb/Ab | G#: Eb/Ab | Bb3 G3 Eb3 Ab2 |
+| 81 | Neo-Soul | A | F7/A | A: F7/A | C4 F3 Eb3 A2 |
+| 81 | Neo-Soul | A# | Bbm9 | A#: Bbm9 | C4 F3 Db3 Bb2 |
+| 81 | Neo-Soul | B | BM7#11 | B: BM7#11 | Bb3 F3 Eb3 B2 |
+
+### Preset 82: Jazz/Bossa
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 82 | Jazz/Bossa | C | Gm7 | C: Gm7 | D4 Bb3 F3 G2 |
+| 82 | Jazz/Bossa | C# | Bb/Ab | C#: Bb/Ab | D4 Bb3 F3 Ab2 |
+| 82 | Jazz/Bossa | D | Am7 | D: Am7 | E4 C4 G3 A2 |
+| 82 | Jazz/Bossa | D# | C/Bb | D#: C/Bb | E4 C4 G3 Bb2 |
+| 82 | Jazz/Bossa | E | Bm7 | E: Bm7 | F#4 D4 A3 B2 |
+| 82 | Jazz/Bossa | F | D/C | F: D/C | F#4 D4 A3 C3 |
+| 82 | Jazz/Bossa | F# | C#m7 | F#: C#m7 | G#4 E4 B3 C#3 |
+| 82 | Jazz/Bossa | G | E/D | G: E/D | G#4 E4 B3 D3 |
+| 82 | Jazz/Bossa | G# | D#m7 | G#: D#m7 | A#4 F#4 C#4 D#3 |
+| 82 | Jazz/Bossa | A | F#/E | A: F#/E | A#4 F#4 C#4 E3 |
+| 82 | Jazz/Bossa | A# | Fm7 | A#: Fm7 | C5 Ab4 Eb4 F3 |
+| 82 | Jazz/Bossa | B | Ab/Gb | B: Ab/Gb | C5 Ab4 Eb4 Gb3 |
+
+### Preset 83: Bossa Nova
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 83 | Bossa Nova | C | CM9 | C: CM9 | D5 B4 E4 C4 |
+| 83 | Bossa Nova | C# | C#dim | C#: C#dim | E5 A#4 G4 C#4 |
+| 83 | Bossa Nova | D | Dm7 | D: Dm7 | F5 C5 A4 D4 |
+| 83 | Bossa Nova | D# | D#dim | D#: D#dim | B5 F#5 C5 D#4 |
+| 83 | Bossa Nova | E | CM9/E | E: CM9/E | G5 D5 C5 E4 |
+| 83 | Bossa Nova | F | FM9 | F: FM9 | G5 E5 A4 F4 |
+| 83 | Bossa Nova | F# | F#dim | F#: F#dim | A5 D#5 C5 F#4 |
+| 83 | Bossa Nova | G | Gm9 | G: Gm9 | A5 F5 Bb4 G4 |
+| 83 | Bossa Nova | G# | C13b9 | G#: C13b9 | A5 E5 Db5 C4 |
+| 83 | Bossa Nova | A | F6 | A: F6 | A5 D5 C5 F4 |
+| 83 | Bossa Nova | A# | BbM9 | A#: BbM9 | C6 A5 D5 Bb4 |
+| 83 | Bossa Nova | B | G13b9 | B: G13b9 | E5 B4 Ab4 G3 |
+
+### Preset 84: Bossa Nova
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 84 | Bossa Nova | C | CM7 | C: CM7 | E5 B4 G4 C4 |
+| 84 | Bossa Nova | C# | C#Dim | C#: C#Dim | G5 E5 A#4 C#4 |
+| 84 | Bossa Nova | D | Dm11 | D: Dm11 | G5 F5 C5 D4 |
+| 84 | Bossa Nova | D# | D#Dim | D#: D#Dim | A5 F#5 C5 D#4 |
+| 84 | Bossa Nova | E | Em11 | E: Em11 | A5 G5 D5 E4 |
+| 84 | Bossa Nova | F | G/F | F: G/F | B5 G5 D5 F4 |
+| 84 | Bossa Nova | F# | F9#11 | F#: F9#11 | B5 G5 Eb5 F4 |
+| 84 | Bossa Nova | G | Gsus13 | G: Gsus13 | E5 C5 F4 G3 |
+| 84 | Bossa Nova | G# | Abdim7 | G#: Abdim7 | E5 B4 F4 Ab3 |
+| 84 | Bossa Nova | A | FM7/A | A: FM7/A | E5 C5 F4 A3 |
+| 84 | Bossa Nova | A# | Bb13 | A#: Bb13 | G5 D5 Ab4 Bb3 |
+| 84 | Bossa Nova | B | Eb/B | B: Eb/B | G5 Eb5 Bb4 B3 |
+
+### Preset 85: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 85 | Jazz | C | CM7#11 | C: CM7#11 | B4 F#4 E4 C3 |
+| 85 | Jazz | C# | DbM7#11 | C#: DbM7#11 | C5 G4 F4 Db3 |
+| 85 | Jazz | D | Dm9 | D: Dm9 | E5 G4 F4 D3 |
+| 85 | Jazz | D# | EbM7#11 | D#: EbM7#11 | D5 A4 G4 Eb3 |
+| 85 | Jazz | E | Em9 | E: Em9 | F#5 A4 G4 E3 |
+| 85 | Jazz | F | FM7#11 | F: FM7#11 | E5 B4 A4 F3 |
+| 85 | Jazz | F# | F#m11 | F#: F#m11 | E5 B4 A4 F#3 |
+| 85 | Jazz | G | G6/9 | G: G6/9 | A5 E5 B4 G3 |
+| 85 | Jazz | G# | AbM7#11 | G#: AbM7#11 | G5 D5 C5 Ab3 |
+| 85 | Jazz | A | Am9 | A: Am9 | B5 D5 C5 A3 |
+| 85 | Jazz | A# | BbM13 | A#: BbM13 | G5 D5 A4 Bb3 |
+| 85 | Jazz | B | Bm11b5 | B: Bm11b5 | E5 A4 F4 B3 |
+
+### Preset 86: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 86 | Jazz | C | CM9 | C: CM9 | B4 E4 D4 C3 |
+| 86 | Jazz | C# | Db9#11 | C#: Db9#11 | Bb4 F4 B3 Db3 |
+| 86 | Jazz | D | Dm9 | D: Dm9 | C5 F4 E4 D3 |
+| 86 | Jazz | D# | D13b9/Eb | D#: D13b9/Eb | B4 Gb4 C4 Eb3 |
+| 86 | Jazz | E | Em11 | E: Em11 | A4 G4 D4 E3 |
+| 86 | Jazz | F | FM13 | F: FM13 | A4 E4 D4 F3 |
+| 86 | Jazz | F# | E/F | F#: E/F | B4 G#4 E4 F3 |
+| 86 | Jazz | G | FM7/G | G: FM7/G | E5 A4 F4 G3 |
+| 86 | Jazz | G# | Ab7#9#5 | G#: Ab7#9#5 | B5 E5 C5 Ab3 |
+| 86 | Jazz | A | Am9/11 | A: Am9/11 | B5 D5 C5 A3 |
+| 86 | Jazz | A# | BbM9 | A#: BbM9 | A5 D5 C5 Bb3 |
+| 86 | Jazz | B | Bdim7 | B: Bdim7 | G5 D5 Ab4 B3 |
+
+### Preset 87: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 87 | Jazz | C | Cmaj7 | C: Cmaj7 | E4 B3 G3 C3 |
+| 87 | Jazz | C# | Aadd9/C# | C#: Aadd9/C# | E4 B3 A3 C#3 |
+| 87 | Jazz | D | Dm6 | D: Dm6 | F4 B3 A3 D3 |
+| 87 | Jazz | D# | B7/D# | D#: B7/D# | F#4 B3 A3 D#3 |
+| 87 | Jazz | E | Em7 | E: Em7 | G4 D4 B3 E3 |
+| 87 | Jazz | F | Fmaj9 | F: Fmaj9 | G4 E4 A3 F3 |
+| 87 | Jazz | F# | Dadd9/F# | F#: Dadd9/F# | A4 E4 D4 F#3 |
+| 87 | Jazz | G | Gm7/9 | G: Gm7/9 | A4 F4 Bb3 G3 |
+| 87 | Jazz | G# | Abmaj9 | G#: Abmaj9 | Bb4 G4 C4 Ab3 |
+| 87 | Jazz | A | Cadd9/G | A: Cadd9/G | B4 E4 C4 G3 |
+| 87 | Jazz | A# | Eadd9/G# | A#: Eadd9/G# | B4 F#4 E4 G#3 |
+| 87 | Jazz | B | Asus7 | B: Asus7 | D5 B4 G4 A3 |
+
+### Preset 88: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 88 | Jazz | C | Fmaj7/9 | C: Fmaj7/9 | C4 A3 G3 E3 |
+| 88 | Jazz | C# | Gm7/b5 | C#: Gm7/b5 | Db4 Bb3 G3 F3 |
+| 88 | Jazz | D | Abmaj7/9 | D: Abmaj7/9 | Eb4 C4 Bb3 G3 |
+| 88 | Jazz | D# | Bbm7/b5 | D#: Bbm7/b5 | E4 Db4 Bb3 Ab3 |
+| 88 | Jazz | E | Bmaj7/9 | E: Bmaj7/9 | F#4 D#4 C#4 A#3 |
+| 88 | Jazz | F | C#m7/b5 | F: C#m7/b5 | G4 E4 C#4 B3 |
+| 88 | Jazz | F# | DM7/9 | F#: DM7/9 | A4 F#4 E4 C#4 |
+| 88 | Jazz | G | Em7/b5 | G: Em7/b5 | A#4 G4 E4 D4 |
+| 88 | Jazz | G# | CM7/9 | G#: CM7/9 | B4 G4 E4 D4 |
+| 88 | Jazz | A | Dm7b5/9 | A: Dm7b5/9 | C5 Ab4 F4 E4 |
+| 88 | Jazz | A# | GbM7/9 | A#: GbM7/9 | Db5 Bb4 Ab4 F4 |
+| 88 | Jazz | B | Abm7/b5 | B: Abm7/b5 | D5 B4 Ab4 Gb4 |
+
+### Preset 89: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 89 | Jazz | C | Cadd9 | C: Cadd9 | G4 E4 D4 C4 |
+| 89 | Jazz | C# | C#dim7 | C#: C#dim7 | A#4 G4 E4 C#4 |
+| 89 | Jazz | D | Gadd13/B | D: Gadd13/B | G4 E4 D4 B3 |
+| 89 | Jazz | D# | D#dim#5 | D#: D#dim#5 | B4 A4 F#4 D#4 |
+| 89 | Jazz | E | FM7/E | E: FM7/E | C5 A4 F4 E4 |
+| 89 | Jazz | F | G7sus2/F | F: G7sus2/F | D5 A4 G4 F4 |
+| 89 | Jazz | F# | D#dim7 | F#: D#dim7 | C5 A4 F#4 D#4 |
+| 89 | Jazz | G | C6 | G: C6 | A4 G4 E4 C4 |
+| 89 | Jazz | G# | Ddim7 | G#: Ddim7 | B4 G#4 F4 D4 |
+| 89 | Jazz | A | Am/C | A: Am/C | C5 A4 E4 C4 |
+| 89 | Jazz | A# | Dm7b5 | A#: Dm7b5 | C5 G#4 F4 D4 |
+| 89 | Jazz | B | G7/D | B: G7/D | B4 G4 F4 D4 |
+
+### Preset 90: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 90 | Jazz | C | Em7 | C: Em7 | D4 B3 G3 E3 |
+| 90 | Jazz | C# | Edim7 | C#: Edim7 | C#4 A#3 G3 E3 |
+| 90 | Jazz | D | FM7 | D: FM7 | E4 C4 A3 F3 |
+| 90 | Jazz | D# | F#dim7 | D#: F#dim7 | D#4 C4 A3 F#3 |
+| 90 | Jazz | E | Em7 | E: Em7 | D4 B3 G3 E3 |
+| 90 | Jazz | F | C6/E | F: C6/E | C4 A3 G3 E3 |
+| 90 | Jazz | F# | F#dim7 | F#: F#dim7 | D#4 C4 A3 F#3 |
+| 90 | Jazz | G | FM7b5 | G: FM7b5 | E4 B3 A3 F3 |
+| 90 | Jazz | G# | Eb7/F | G#: Eb7/F | E4 B3 G#3 F3 |
+| 90 | Jazz | A | Gadd9 | A: Gadd9 | D4 B3 A3 G3 |
+| 90 | Jazz | A# | A#11/F | A#: A#11/F | E4 D4 A#3 F3 |
+| 90 | Jazz | B | F#dim7 | B: F#dim7 | D#4 C4 A3 F#3 |
+
+### Preset 91: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 91 | Jazz | C | Gm7 | C: Gm7 | D4 A#3 F3 G2 |
+| 91 | Jazz | C# | G#M7 | C#: G#M7 | D#4 C4 G3 G#2 |
+| 91 | Jazz | D | Am7 | D: Am7 | E4 C4 G3 A2 |
+| 91 | Jazz | D# | A#M7 | D#: A#M7 | F4 D4 A3 A#2 |
+| 91 | Jazz | E | G/B | E: G/B | D4 G3 B2 |
+| 91 | Jazz | F | D#M7 | F: D#M7 | D4 A#3 G3 D#3 |
+| 91 | Jazz | F# | A#/D | F#: A#/D | D4 A#3 G3 D#3 |
+| 91 | Jazz | G | D | G: D | D4 A3 F#3 D3 |
+| 91 | Jazz | G# | CM7sus2 | G#: CM7sus2 | D4 B3 G3 C3 |
+| 91 | Jazz | A | Em7 | A: Em7 | D4 B3 G3 E3 |
+| 91 | Jazz | A# | F6 | A#: F6 | D4 C4 A3 F3 |
+| 91 | Jazz | B | C6sus2b5 | B: C6sus2b5 | D4 A3 F#3 C3 |
+
+### Preset 92: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 92 | Jazz | C | A#M7 | C: A#M7 | A3 F3 D3 A#2 |
+| 92 | Jazz | C# | BM7 | C#: BM7 | A#3 F#3 D#3 B2 |
+| 92 | Jazz | D | Cm7b5 | D: Cm7b5 | A#3 F#3 D#3 C3 |
+| 92 | Jazz | D# | C#dim7 | D#: C#dim7 | A#3 G3 E3 C#3 |
+| 92 | Jazz | E | Em7b5/D | E: Em7b5/D | A#3 G3 E3 D3 |
+| 92 | Jazz | F | Fm7/D# | F: Fm7/D# | C4 G#3 F3 D#3 |
+| 92 | Jazz | F# | Edim7 | F#: Edim7 | C#4 A#3 G3 E3 |
+| 92 | Jazz | G | F7/D# | G: F7/D# | C4 A3 F3 D#3 |
+| 92 | Jazz | G# | F#dim7 | G#: F#dim7 | D#4 C4 A3 F#3 |
+| 92 | Jazz | A | Gm7/F | A: Gm7/F | D4 A#3 G3 F3 |
+| 92 | Jazz | A# | G#M7/D# | A#: G#M7/D# | C4 G#3 G3 D#3 |
+| 92 | Jazz | B | F7/D# | B: F7/D# | C4 A3 F3 D#3 |
+
+### Preset 93: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 93 | Jazz | C | A#M7/A | C: A#M7/A | F3 D3 A#2 A2 |
+| 93 | Jazz | C# | G#6 | C#: G#6 | F3 D#3 C3 G#2 |
+| 93 | Jazz | D | Am7 | D: Am7 | G3 E3 C3 A2 |
+| 93 | Jazz | D# | A#M7 | D#: A#M7 | A3 F3 D3 A#2 |
+| 93 | Jazz | E | Gadd11/B | E: Gadd11/B | G3 D3 C3 B2 |
+| 93 | Jazz | F | FM7/C | F: FM7/C | A3 F3 E3 C3 |
+| 93 | Jazz | F# | A7/C | F#: A7/C | A3 G3 E3 C#3 |
+| 93 | Jazz | G | D7/C | G: D7/C | A3 F#3 D3 C3 |
+| 93 | Jazz | G# | D#M7b5/D | G#: D#M7b5/D | A3 G3 D#3 D3 |
+| 93 | Jazz | A | Cadd9/D | A: Cadd9/D | C4 G3 E3 D3 |
+| 93 | Jazz | A# | Fadd9 | A#: Fadd9 | C4 A3 G3 F3 |
+| 93 | Jazz | B | Cdim7 | B: Cdim7 | A3 F#3 D#3 C3 |
+
+### Preset 94: Jazz
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 94 | Jazz | C | CM7 | C: CM7 | B4 E4 G3 C3 |
+| 94 | Jazz | C# | DbM7 | C#: DbM7 | C5 F4 G#3 C#3 |
+| 94 | Jazz | D | Dm7 | D: Dm7 | C5 F4 A3 D3 |
+| 94 | Jazz | D# | Ebm7add13 | D#: Ebm7add13 | C5 F#4 C#4 D#3 |
+| 94 | Jazz | E | Em7/b13 | E: Em7/b13 | C5 G4 D4 E3 |
+| 94 | Jazz | F | Fm7 | F: Fm7 | C5 G#4 D#4 F3 |
+| 94 | Jazz | F# | F#m7/b5 | F#: F#m7/b5 | C5 A4 E4 F#3 |
+| 94 | Jazz | G | G9sus | G: G9sus | A4 F4 C4 G3 |
+| 94 | Jazz | G# | G#dim7 | G#: G#dim7 | B4 F4 D4 G#3 |
+| 94 | Jazz | A | Am6 | A: Am6 | C5 F#4 E4 A3 |
+| 94 | Jazz | A# | F/Bb | A#: F/Bb | A4 F4 C4 A#2 |
+| 94 | Jazz | B | Bdim7 | B: Bdim7 | G#4 D4 F3 B2 |
+
+### Preset 95: Classical
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 95 | Classical | C | FM7/E | C: FM7/E | A4 F4 E4 |
+| 95 | Classical | C# | Bdim/D | C#: Bdim/D | B4 F4 D4 |
+| 95 | Classical | D | Am | D: Am | C5 E4 A3 |
+| 95 | Classical | D# | G#dim7 | D#: G#dim7 | D5 F4 B3 G#3 |
+| 95 | Classical | E | C/G | E: C/G | E5 E4 C4 G4 |
+| 95 | Classical | F | Amb9/C | F: Amb9/C | A5 A#4 E4 C4 |
+| 95 | Classical | F# | Fadd9/C | F#: Fadd9/C | G5 A4 F4 C4 |
+| 95 | Classical | G | Dm | G: Dm | F5 A4 F4 D3 |
+| 95 | Classical | G# | C/G | G#: C/G | E5 G4 C4 G2 |
+| 95 | Classical | A | C/G | A: C/G | C5 E4 G3 G2 |
+| 95 | Classical | A# | Fadd9/G | A#: Fadd9/G | A4 F4 C4 G2 |
+| 95 | Classical | B | Ddim/G | B: Ddim/G | G#4 F4 D4 G2 |
+
+### Preset 96: Classical
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 96 | Classical | C | Am | C: Am | E4 C4 A3 A2 |
+| 96 | Classical | C# | Bm7/A | C#: Bm7/A | D4 B3 A3 A2 |
+| 96 | Classical | D | Fdim/B | D: Fdim/B | F4 B3 G#3 B2 |
+| 96 | Classical | D# | C/E | D#: C/E | E4 C4 G3 E3 |
+| 96 | Classical | E | A7/G | E: A7/G | E4 C#4 A3 G3 |
+| 96 | Classical | F | Dm7 | F: Dm7 | F4 C4 A3 D3 |
+| 96 | Classical | F# | D#aug | F#: D#aug | D#4 B3 G3 D#3 |
+| 96 | Classical | G | E | G: E | E4 B3 G#3 E3 |
+| 96 | Classical | G# | F | G#: F | F4 C4 A3 F3 |
+| 96 | Classical | A | D/F# | A: D/F# | D4 A3 F#3 F#2 |
+| 96 | Classical | A# | C/G | A#: C/G | E4 C4 G3 G2 |
+| 96 | Classical | B | E/G# | B: E/G# | E4 B3 G#3 G#2 |
+
+### Preset 97: Classical
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 97 | Classical | C | F#/C# | C: F#/C# | F#4 A#3 F#3 C#3 |
+| 97 | Classical | C# | F#/A# | C#: F#/A# | F#4 C#4 F#3 A#2 |
+| 97 | Classical | D | G#m7 | D: G#m7 | F#4 B3 F#3 G#2 |
+| 97 | Classical | D# | A6 | D#: A6 | F#4 C#4 E3 A2 |
+| 97 | Classical | E | F#/C# | E: F#/C# | F#4 C#4 F#3 A#2 |
+| 97 | Classical | F | Bsus2 | F: Bsus2 | F#4 C#4 F#3 B2 |
+| 97 | Classical | F# | G#/C | F#: G#/C | G#4 D#4 G#3 C3 |
+| 97 | Classical | G | C#7 | G: C#7 | F4 B3 G#3 C#3 |
+| 97 | Classical | G# | A#7/D | G#: A#7/D | F4 A#3 G#3 D3 |
+| 97 | Classical | A | F#6sus4/C# | A: F#6sus4/C# | D#4 B3 F#3 C#3 |
+| 97 | Classical | A# | C#m7 | A#: C#m7 | E4 B3 G#3 C#3 |
+| 97 | Classical | B | C#7 | B: C#7 | F4 B3 F3 C#3 |
+
+### Preset 98: Classical
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 98 | Classical | C | Dm | C: Dm | D4 A3 F3 D2 |
+| 98 | Classical | C# | D#M7/D | C#: D#M7/D | D#4 A#3 G3 D2 |
+| 98 | Classical | D | E7/D | D: E7/D | B3 G#3 E3 D2 |
+| 98 | Classical | D# | Dm7 | D#: Dm7 | C4 A3 F3 D2 |
+| 98 | Classical | E | D7 | E: D7 | C4 A3 F#3 D2 |
+| 98 | Classical | F | Gm/D | F: Gm/D | D4 A#3 G3 D2 |
+| 98 | Classical | F# | G#/D | F#: G#/D | D#4 C4 G#3 D2 |
+| 98 | Classical | G | A/D | G: A/D | E4 C#4 A3 D2 |
+| 98 | Classical | G# | A#add9/D | G#: A#add9/D | F4 C4 A#3 D2 |
+| 98 | Classical | A | DM7(13) | A: DM7(13) | F#4 C#4 B3 D2 |
+| 98 | Classical | A# | Csus2/D | A#: Csus2/D | G4 D4 C4 D2 |
+| 98 | Classical | B | G#dim/D | B: G#dim/D | G#4 D4 B3 D2 |
+
+### Preset 99: Modern
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 99 | Modern | C | CM13 | C: CM13 | B3 A3 E3 C3 |
+| 99 | Modern | C# | AM9/C# | C#: AM9/C# | B3 A3 E3 C#3 |
+| 99 | Modern | D | Dm13 | D: Dm13 | C4 B3 F3 D3 |
+| 99 | Modern | D# | EbM13 | D#: EbM13 | D4 C4 G3 D#3 |
+| 99 | Modern | E | CM9/E | E: CM9/E | D4 C4 G3 E3 |
+| 99 | Modern | F | FM13 | F: FM13 | E4 D4 A3 F3 |
+| 99 | Modern | F# | FmM13 | F#: FmM13 | E4 D4 G#3 F3 |
+| 99 | Modern | G | CM9 (no3)/G | G: CM9 (no3)/G | B4 D4 C4 G3 |
+| 99 | Modern | G# | AbMb5/#9 | G#: AbMb5/#9 | B4 D4 C4 G#3 |
+| 99 | Modern | A | Am11 | A: Am11 | D4 G3 C3 A2 |
+| 99 | Modern | A# | BbM9 | A#: BbM9 | D4 A3 C3 A#2 |
+| 99 | Modern | B | G6/9 | B: G6/9 | E4 A3 G3 B2 |
+
+### Preset 100: Modern
+
+| Preset | Set Name | Trigger | Chord Label | Full Chord Field | Exact Voiced Notes |
+| --- | --- | --- | --- | --- | --- |
+| 100 | Modern | C | CM9 | C: CM9 | B4 E4 D4 C3 |
+| 100 | Modern | C# | Cm9 | C#: Cm9 | Bb4 Eb4 D4 C3 |
+| 100 | Modern | D | Dm9 | D: Dm9 | C5 F4 E4 D3 |
+| 100 | Modern | D# | Dm6/9 | D#: Dm6/9 | B4 F4 E4 D3 |
+| 100 | Modern | E | CM9/E | E: CM9/E | B4 D4 C4 E3 |
+| 100 | Modern | F | Dm9/F | F: Dm9/F | C5 E4 D4 F3 |
+| 100 | Modern | F# | D9/F# | F#: D9/F# | C5 E4 D4 F#3 |
+| 100 | Modern | G | Gsus13 | G: Gsus13 | E5 A4 F4 G3 |
+| 100 | Modern | G# | G13b9 | G#: G13b9 | E5 Ab4 F4 G3 |
+| 100 | Modern | A | AbMaj13 | A: AbMaj13 | E5 Bb4 G4 Ab3 |
+| 100 | Modern | A# | AbDimM7 | A#: AbDimM7 | G5 B4 F4 Ab3 |
+| 100 | Modern | B | BbM13 | B: BbM13 | A5 D5 G4 Bb3 |
+
+## Verbatim Source CSV
+
+The following block is the exact CSV source content used by the app.
+
+```csv
+preset_number,name,chord,chord_notes
+1,Pop,C: Cadd9,E4 D4 G3 C3
+1,Pop,C#: C#M9/C,F4 D#4 C4 C#3
+1,Pop,D: Dm7,C4 A3 F4 D3
+1,Pop,D#: D#M7,G4 D4 A#3 D#3
+1,Pop,E: Cadd9/E,G4 D4 C4 E3
+1,Pop,F: FM9,G4 E4 A3 F2
+1,Pop,F#: Dadd9/F#,E4 D4 A3 F#2
+1,Pop,G: Em7/G,G4 E4 D4 G2
+1,Pop,G#: Fm6/G#,F4 D4 C4 G#2
+1,Pop,A: FM/A,F4 C4 A3 A2
+1,Pop,A#: Gm/A#,G4 D4 A#3 A#2
+1,Pop,B: G/B,G4 D4 B3 B2
+2,Pop,C: CM9,D4 B3 E3 C3
+2,Pop,C#: C#dim7,E4 A#3 G3 C#3
+2,Pop,D: Dm9,E4 C4 F3 D3
+2,Pop,D#: D# dim7,F#4 C4 A3 D#3
+2,Pop,E: Em7,G4 D4 B3 E3
+2,Pop,F: FM9,G4 E4 A3 F3
+2,Pop,F#: F#m7b5,E4 C4 A3 F#3
+2,Pop,G: F/A,F4 C4 A3 G2
+2,Pop,G#: G# dim7,F4 D4 B3 G#2
+2,Pop,A: Am9,G4 C4 B3 A2
+2,Pop,A#: C/A#,E4 C4 G3 A#2
+2,Pop,B: Bm7b5,F4 D4 A3 B2
+3,Jazz,C: D7sus2/C,D4 A3 E3 C3
+3,Jazz,C#: C#7#9,E4 B3 F3 C#3
+3,Jazz,D: Dm9,E4 C4 F3 D3
+3,Jazz,D#: D7#9,F#4 C#4 G3 D#3
+3,Jazz,E: E7#9,G4 D4 G#3 E3
+3,Jazz,F: FM9,G4 E4 A3 F3
+3,Jazz,F#: F#7#9,A4 E4 A#3 F#3
+3,Jazz,G: G7(13),E4 B3 F3 G2
+3,Jazz,G#: G#7(13),F4 C4 F#3 G#2
+3,Jazz,A: Am7(11),D4 C4 G3 A2
+3,Jazz,A#: A#9,D4 C4 G#3 A#2
+3,Jazz,B: Bm7(11),E4 D4 A3 B2
+4,Jazz,C: Dsus2/C,D4 A3 E3 C3
+4,Jazz,C#: C#7#9,D#4 B3 F3 C#3
+4,Jazz,D: Dm9,E4 C4 F3 D3
+4,Jazz,D#: D#9,F4 C#4 G3 D#3
+4,Jazz,E: Em9,F#4 D4 G3 E3
+4,Jazz,F: Fm9,G4 D#4 G#3 F2
+4,Jazz,F#: F#m7b5,E4 C4 A3 F#2
+4,Jazz,G: Gaug7,D#4 B3 F3 G2
+4,Jazz,G#: G#7(13),F4 C4 F#3 G#2
+4,Jazz,A: Aaug7,F4 C#4 G3 A2
+4,Jazz,A#: A#7(13),G4 D4 G#3 A#2
+4,Jazz,B: Bm7(11),E4 D4 A3 B2
+5,Jazz,C: CM9,D4 B3 E3 C3
+5,Jazz,C#: C#M7,D#4 C4 F3 C#3
+5,Jazz,D: DM9,E4 C#4 F#3 D3
+5,Jazz,D#: D#M9,F4 D4 G3 D#3
+5,Jazz,E: EM9,F#4 D#4 G#3 E3
+5,Jazz,F: FM9,G4 E4 A3 F3
+5,Jazz,F#: F#M9,G#4 F4 A#3 F#3
+5,Jazz,G: GM9,A4 F#4 B3 G3
+5,Jazz,G#: G#M9,A#4 G4 C4 G#3
+5,Jazz,A: AM9,B4 G#4 C#4 A3
+5,Jazz,A#: A#M9,C5 A4 D4 A#3
+5,Jazz,B: BM9,C#5 A#4 D#4 B3
+6,Blues,C: C9,E4 D4 A#3 C3
+6,Blues,C#: C#9,D#4 B3 F3 C#3
+6,Blues,D: D9,E4 C4 F#3 D3
+6,Blues,D#: D#9,F4 C#4 G3 D#3
+6,Blues,E: E7#9,G4 D4 G#3 E3
+6,Blues,F: Fm9,G4 D#4 A3 F2
+6,Blues,F#: F#dim7,D#4 C4 A3 F#2
+6,Blues,G: G7(13),E4 B3 F3 G2
+6,Blues,G#: G#dim7,F4 D4 B3 G#2
+6,Blues,A: Aaug7,F4 C#4 G3 A2
+6,Blues,A#: A#7(13),G4 D4 G#3 A#2
+6,Blues,B: Bm7b5,F4 D4 A3 B2
+7,Trad Maj,C: C,C5 G4 E4 C3
+7,Trad Maj,C#: C#dim7,A#4 G4 E4 C#3
+7,Trad Maj,D: Dm,A4 F4 D4 D3
+7,Trad Maj,D#: D#dim7,C5 A4 F#4 D#3
+7,Trad Maj,E: Em,B4 G4 E4 E3
+7,Trad Maj,F: F,C5 A4 F4 F3
+7,Trad Maj,F#: F#m7b5,C5 A4 E4 F#3
+7,Trad Maj,G: G,B4 G4 D4 G3
+7,Trad Maj,G#: G#dim7,B4 F4 D4 G#3
+7,Trad Maj,A: Am,C5 A4 E4 A2
+7,Trad Maj,A#: A#,A#4 F4 D4 A#2
+7,Trad Maj,B: Bdim,B4 F4 D4 B2
+8,Trad Min,C: Cm,C5 G4 D#4 C3
+8,Trad Min,C#: C#,G#4 F4 C#4 C#3
+8,Trad Min,D: Ddim,G#4 F4 D4 D3
+8,Trad Min,D#: Eb,A#4 G4 D#4 D#3
+8,Trad Min,E: Edim7,A#4 G4 C#4 E3
+8,Trad Min,F: Fm,G#4 F4 C4 F2
+8,Trad Min,F#: F#dim7,A4 D#4 C4 F#2
+8,Trad Min,G: Gm,G4 D4 A#3 G2
+8,Trad Min,G#: G#,G#4 D#4 C4 G#2
+8,Trad Min,A: Am7b5,G4 D#4 C4 A2
+8,Trad Min,A#: A#,A#4 F4 D4 A#2
+8,Trad Min,B: Bdim7,G#4 F4 D4 B2
+9,Trad Min 2,C: Cm,C5 G4 D#4 C3
+9,Trad Min 2,C#: C#,G#4 F4 C#4 C#3
+9,Trad Min 2,D: Ddim,G#4 F4 D4 D3
+9,Trad Min 2,D#: D#aug,B4 G4 D#4 D#3
+9,Trad Min 2,E: Em,B4 G4 E4 E3
+9,Trad Min 2,F: Fm,G#4 F4 C4 F2
+9,Trad Min 2,F#: F#dim7,A4 D#4 C4 F#2
+9,Trad Min 2,G: G,G4 D4 B3 G2
+9,Trad Min 2,G#: G#,C4 D#4 G#4 G#2
+9,Trad Min 2,A: Am7b5,G4 D#4 C4 A2
+9,Trad Min 2,A#: A#,A#4 F4 D4 A#2
+9,Trad Min 2,B: Bdim,B4 F4 D4 B2
+10,Pop Min,C: Cmadd9,G4 D#4 D4 C3
+10,Pop Min,C#: C#M7,F4 C4 G#3 C#3
+10,Pop Min,D: Dm7b5,G#4 F4 C4 D3
+10,Pop Min,D#: D#M7,G4 D4 A#3 D#3
+10,Pop Min,E: Edim7,G4 C#4 A#3 E3
+10,Pop Min,F: Fm9,G4 D#4 G#3 F2
+10,Pop Min,F#: F#dim7,D#4 C4 A3 F#2
+10,Pop Min,G: Gm7,F4 D4 A#3 G2
+10,Pop Min,G#: G#M7,G4 D#4 C4 G#2
+10,Pop Min,A: Am7b5,G4 D#4 C4 A2
+10,Pop Min,A#: G#/A#,D#4 C4 G#3 A#2
+10,Pop Min,B: Bdim7,F4 D4 G#3 B2
+11,Pop Min,C: Cmadd9,G4 D#4 D4 C3
+11,Pop Min,C#: Gdim/C#,G4 D#4 A#3 C#3
+11,Pop Min,D: Dm7b5,F4 C4 G#3 D3
+11,Pop Min,D#: D#M7,G4 D4 A#3 D#3
+11,Pop Min,E: EM9,F#4 D#4 G#3 E3
+11,Pop Min,F: Fm9,G4 D#4 G#3 F2
+11,Pop Min,F#: F#dim7,D#4 C4 A3 F#2
+11,Pop Min,G: Gaug7,D#4 B3 F3 G2
+11,Pop Min,G#: G#M7,G4 D#4 C4 G#2
+11,Pop Min,A: Am7b5,G4 D#4 C4 A2
+11,Pop Min,A#: Cm7/A#,G4 D#4 C4 A#2
+11,Pop Min,B: Baug#9,G4 D#4 D4 B2
+12,Jazz Min,C: Cm7(11),F4 D#4 A#3 C3
+12,Jazz Min,C#: C#7#9,E4 B3 F3 C#3
+12,Jazz Min,D: Dm7b5,G#4 F4 C4 D3
+12,Jazz Min,D#: D#M7#5,G4 D4 B3 D#3
+12,Jazz Min,E: E9,F#4 D4 G#3 E2
+12,Jazz Min,F: F9,G4 D#4 A3 F2
+12,Jazz Min,F#: F#dim7,D#4 C4 A3 F#2
+12,Jazz Min,G: G7#9,A#4 F4 B3 G2
+12,Jazz Min,G#: G#M7b5,G4 D4 C4 G#2
+12,Jazz Min,A: Am7b5,G4 D#4 C4 A2
+12,Jazz Min,A#: A#m7,F4 C#4 G#3 A#2
+12,Jazz Min,B: Bdim7,F4 D4 G#3 B2
+13,Jazz Min,C: Cm9,D4 A#3 D#3 C3
+13,Jazz Min,C#: C#9,D#4 B3 F3 C#3
+13,Jazz Min,D: Dm9,E4 C4 F3 D3
+13,Jazz Min,D#: D#9,F4 C#4 G3 D#3
+13,Jazz Min,E: EM9,F#4 D#4 G#3 E2
+13,Jazz Min,F: Fm9,G4 D#4 G#3 F2
+13,Jazz Min,F#: F#dim7,D#4 C4 A3 F#2
+13,Jazz Min,G: G7(13),E4 B3 F3 G2
+13,Jazz Min,G#: G#m6,F4 D#4 B3 G#2
+13,Jazz Min,A: Am7b5,G4 D#4 C4 A2
+13,Jazz Min,A#: A#m7,F4 C#4 G#3 A#2
+13,Jazz Min,B: Bm7b5,F4 D4 A3 B2
+14,Oct Stack,C: ,C5 C4
+14,Oct Stack,C#: ,C#5 C#4
+14,Oct Stack,D: ,D5 D4
+14,Oct Stack,D#: ,D#5 D#4
+14,Oct Stack,E: ,E5 E4
+14,Oct Stack,F: ,F5 F4
+14,Oct Stack,F#: ,F#5 F#4
+14,Oct Stack,G: ,G5 G4
+14,Oct Stack,G#: ,G#5 G#4
+14,Oct Stack,A: ,A5 A4
+14,Oct Stack,A#: ,A#5 A#4
+14,Oct Stack,B: ,B5 B4
+15,4th Stack,C: ,F4 C4
+15,4th Stack,C#: ,F#4 C#4
+15,4th Stack,D: ,G4 D4
+15,4th Stack,D#: ,G#4 D#4
+15,4th Stack,E: ,A4 E4
+15,4th Stack,F: ,A#4 F4
+15,4th Stack,F#: ,B4 F#4
+15,4th Stack,G: ,C5 G4
+15,4th Stack,G#: ,C#5 G#4
+15,4th Stack,A: ,D5 A4
+15,4th Stack,A#: ,D#5 A#4
+15,4th Stack,B: ,E5 B4
+16,5th Stack,C: ,G4 C4
+16,5th Stack,C#: ,G#4 C#4
+16,5th Stack,D: ,A4 D4
+16,5th Stack,D#: ,A#4 D#4
+16,5th Stack,E: ,B4 E4
+16,5th Stack,F: ,C5 F4
+16,5th Stack,F#: ,C#5 F#4
+16,5th Stack,G: ,D5 G4
+16,5th Stack,G#: ,D#5 G#4
+16,5th Stack,A: ,E5 A4
+16,5th Stack,A#: ,F5 A#4
+16,5th Stack,B: ,F#5 B4
+17,Utility,C: C,G3 E3 C3
+17,Utility,C#: C#,G#3 F3 C#3
+17,Utility,D: D,A3 F#3 D3
+17,Utility,D#: D#,A#3 G3 D#3
+17,Utility,E: E,B3 G#3 E3
+17,Utility,F: F,C4 A3 F3
+17,Utility,F#: F#,C#4 A#3 F#3
+17,Utility,G: G,D4 B3 G3
+17,Utility,G#: G#,D#4 C4 G#3
+17,Utility,A: A,E4 C#4 A3
+17,Utility,A#: A#,F4 D4 A#3
+17,Utility,B: B,F#4 D#4 B3
+18,Utility,C: Cm,G3 D#3 C3
+18,Utility,C#: C#m,G#3 E3 C#3
+18,Utility,D: Dm,A3 F3 D3
+18,Utility,D#: D#m,A#3 F#3 D#3
+18,Utility,E: E,B3 G3 E3
+18,Utility,F: Fm,C4 G#3 F3
+18,Utility,F#: F#m,C#4 A3 F#3
+18,Utility,G: Gm,D4 A#3 G3
+18,Utility,G#: G#m,D#4 B3 G#3
+18,Utility,A: Am,E4 C4 A3
+18,Utility,A#: A#m,F4 C#4 A#3
+18,Utility,B: Bm,F#4 D4 B3
+19,Utility,C: CM7,B3 G3 E3 C3
+19,Utility,C#: C#M7,C4 G#3 F3 C#3
+19,Utility,D: DM7,C#4 A3 F#3 D3
+19,Utility,D#: D#M7,D4 A#3 G3 D#3
+19,Utility,E: EM7,D#4 B3 G#3 E3
+19,Utility,F: FM7,E4 C4 A3 F3
+19,Utility,F#: F#FM7,F4 C#4 A#3 F#3
+19,Utility,G: GM7,F#4 D4 B3 G3
+19,Utility,G#: G#M7,G4 D#4 C4 G#3
+19,Utility,A: AM7,G#4 E4 C#4 A3
+19,Utility,A#: A#M7,A4 F4 D4 A#3
+19,Utility,B: BM7,A#4 F#4 D#4 B3
+20,Utility,C: Cm7,A#3 G3 D#3 C3
+20,Utility,C#: C#m7,B3 G#3 E3 C#3
+20,Utility,D: Dm7,C4 A3 F3 D3
+20,Utility,D#: D#m7,C#4 A#3 F#3 D#3
+20,Utility,E: Em7,D4 B3 G3 E3
+20,Utility,F: Fm7,D#4 C4 G#3 F3
+20,Utility,F#: F#m7,E4 C#4 A3 F#3
+20,Utility,G: Gm7,F4 D4 A#3 G3
+20,Utility,G#: G#m7,F#4 D#4 B3 G#3
+20,Utility,A: Am7,G4 E4 C4 A3
+20,Utility,A#: A#m7,G#4 F4 C#4 A#3
+20,Utility,B: Bm7,A4 F#4 D4 B3
+21,Utility,C: CM9,D4 B3 E3 C3
+21,Utility,C#: C#M9,D#4 C4 F3 C#3
+21,Utility,D: DM9,E4 C#4 F#3 D3
+21,Utility,D#: D#M9,F4 D4 G3 D#3
+21,Utility,E: EM9,F#4 D#4 G#3 E3
+21,Utility,F: FM9,G4 E4 A3 F3
+21,Utility,F#: F#M9,G#4 F4 A#3 F#3
+21,Utility,G: GM9,A4 F#4 B3 G3
+21,Utility,G#: G#M9,A#4 G4 C4 G#3
+21,Utility,A: AM9,B4 G#4 C#4 A3
+21,Utility,A#: A#M9,C5 A4 D4 A#3
+21,Utility,B: BM9,C#5 A#4 D#4 B3
+22,Utility,C: Cm9,D4 A#3 D#3 C3
+22,Utility,C#: C#m9,D#4 B3 E3 C#3
+22,Utility,D: Dm9,E4 C4 F3 D3
+22,Utility,D#: D#m9,F4 C#4 F#3 D#3
+22,Utility,E: Em9,F#4 D4 G3 E3
+22,Utility,F: Fm9,G4 D#4 G#3 F3
+22,Utility,F#: F#m9,G#4 E4 A3 F#3
+22,Utility,G: Gm9,A4 F4 A#3 G3
+22,Utility,G#: G#m9,A#4 F#4 B3 G#3
+22,Utility,A: Am9,B4 G4 C4 A3
+22,Utility,A#: A#m9,C5 G#4 C#4 A#3
+22,Utility,B: Bm9,C#5 A4 D4 B3
+23,Utility,C: CM9/#11,F#4 D4 B3 C3
+23,Utility,C#: C#M9/#11,G4 D#4 C4 C#3
+23,Utility,D: DM9/#11,G#4 E4 C#4 D3
+23,Utility,D#: D#M9/#11,A4 F4 D4 D#3
+23,Utility,E: EM9/#11,A#4 F#4 D#4 E3
+23,Utility,F: FM9/#11,B4 G4 E4 F3
+23,Utility,F#: F#M9/#11,C5 G#4 F4 F#3
+23,Utility,G: GM9/#11,C#5 A4 F#4 G3
+23,Utility,G#: G#M9/#11,D5 A#4 G4 G#3
+23,Utility,A: AM9/#11,D#5 B4 G#4 A3
+23,Utility,A#: A#M9/#11,E5 C5 A4 A#3
+23,Utility,B: BM9/#11,F5 C#5 A#4 B3
+24,Utility,C: Cm9/11,F4 D4 A#3 C3
+24,Utility,C#: C#m9/11,F#4 D#4 B3 C#3
+24,Utility,D: Dm9/11,G4 E4 C4 D3
+24,Utility,D#: D#m9/11,G#4 F4 C#4 D#3
+24,Utility,E: Em9/11,A4 F#4 D4 E3
+24,Utility,F: Fm9/11,A#4 G4 D#4 F3
+24,Utility,F#: F#m9/11,B4 G#4 E4 F#3
+24,Utility,G: Gm9/11,C5 A4 F4 G3
+24,Utility,G#: G#m9/11,C#5 A#4 F#4 G#3
+24,Utility,A: Am9/11,D5 B4 G4 A3
+24,Utility,A#: A#m9/11,D#5 C5 G#4 A#3
+24,Utility,B: Bm9/11,E5 C#5 A4 B3
+25,Utility,C: CM7,B3 G3 E3 C3
+25,Utility,C#: CM7,C4 B3 G3 E3
+25,Utility,D: CM7,E4 C4 B3 G3
+25,Utility,D#: CM7,G4 E4 C4 B3
+25,Utility,E: CM7,B4 G4 E4 C4
+25,Utility,F: CM7,C5 B4 G4 E4
+25,Utility,F#: CM7,B4 E4 G3 C3
+25,Utility,G: CM7,C5 B4 E4 G3
+25,Utility,G#: CM7,E5 B4 G4 C4
+25,Utility,A: CM7,G5 C5 B4 E4
+25,Utility,A#: CM7,B5 E5 C5 G4
+25,Utility,B: CM7,C6 G5 E5 B4
+26,Utility,C: Cm7,A#3 G3 D#3 C3
+26,Utility,C#: Cm7/D#,C4 A#3 G3 D#3
+26,Utility,D: Cm7/G,D#4 C4 A#3 G3
+26,Utility,D#: Cm7/A#,G4 D#4 C4 A#3
+26,Utility,E: Cm7,A#4 G4 D#4 C4
+26,Utility,F: Cm7/D#,C5 A#4 G4 D#4
+26,Utility,F#: Cm7,A#4 D#4 G3 C3
+26,Utility,G: Cm7/G,C5 A#4 D#4 G3
+26,Utility,G#: Cm7,D#5 A#4 G4 C4
+26,Utility,A: Cm7/D#,G5 C5 A#4 D#4
+26,Utility,A#: Cm7/G,A#5 D#5 C5 G4
+26,Utility,B: Cm7/A#,C6 G5 D#5 A#4
+27,Pop/Synth,C: C,E4 G3 C3
+27,Pop/Synth,C#: Em,G4 B3 E3
+27,Pop/Synth,D: G,B4 D4 G3
+27,Pop/Synth,D#: Am,C5 E4 A3
+27,Pop/Synth,E: Bm,D5 F#4 B3
+27,Pop/Synth,F: C,E5 G4 C4
+27,Pop/Synth,F#: Em,G5 B4 E4
+27,Pop/Synth,G: G,B5 D5 G4
+27,Pop/Synth,G#: Am,C6 E5 A4
+27,Pop/Synth,A: Bm,D6 F#5 B4
+27,Pop/Synth,A#: C,E6 G5 C5
+27,Pop/Synth,B: Em,D7 B5 E5
+28,Pop,C: C,C4 G3 E3 C3
+28,Pop,C#: C7,A#3 G3 E3 C3
+28,Pop,D: Dm7,C4 A3 F3 D3
+28,Pop,D#: D#M7,A#3 G3 D3 D#2
+28,Pop,E: C/E,C4 G3 E3 E2
+28,Pop,F: F,C4 A3 F3 F2
+28,Pop,F#: Fm,C4 G#3 F3 F2
+28,Pop,G: G,B3 G3 D3 G2
+28,Pop,G#: C/G,C4 G3 E3 G2
+28,Pop,A: Am7,C4 G3 E3 A2
+28,Pop,A#: Eaug/A#,C4 G#3 E3 A#2
+28,Pop,B: G7/B,B3 G3 F3 B2
+29,Pop,C: C,E4 C4 C3 C2
+29,Pop,C#: FM7,E4 C4 F2 F1
+29,Pop,D: G,D4 B3 G2 G1
+29,Pop,D#: Em7,D4 G3 B2 E2
+29,Pop,E: Dm7,C4 F3 A2 D2
+29,Pop,F: CM7/E,C4 G3 B2 E2
+29,Pop,F#: F,C4 A3 C3 F2
+29,Pop,G: D7/G,D4 A3 C3 G2
+29,Pop,G#: G,D4 B3 D3 G2
+29,Pop,A: Am,E4 C4 E3 A2
+29,Pop,A#: Dm,F4 A3 A2 D2
+29,Pop,B: G7,G4 B3 F3 G2
+30,Pop,C: Cm,D#4 G3 C3
+30,Pop,C#: D#,G4 A#3 D#3
+30,Pop,D: G#,C4 D#3 G#2
+30,Pop,D#: A#,D4 F3 A#2
+30,Pop,E: Gm,G4 D4 A#3 G3
+30,Pop,F: G#,G#4 D#4 C4 G#3
+30,Pop,F#: D#,G4 D#4 A#3 D#3
+30,Pop,G: A#sus4/D,F4 D#4 A#3 D3
+30,Pop,G#: Cm,D#4 C4 G3 C3
+30,Pop,A: G/B,D4 B3 G3 B2
+30,Pop,A#: G#,C4 G#3 D#3 G#2
+30,Pop,B: F/A,C4 A3 F3 A2
+31,Pop,C: Cadd11,C5 F4 E4 C3
+31,Pop,C#: Bb/C,F4 D4 A#3 C3
+31,Pop,D: Dm7,F4 C4 A3 D3
+31,Pop,D#: D7,F#4 C4 A3 D3
+31,Pop,E: Cadd9/E,G4 D4 C4 E3
+31,Pop,F: FM7,A4 E4 C4 F3
+31,Pop,F#: F7,A4 D#4 C4 F3
+31,Pop,G: Gm7,A#4 F4 D4 G3
+31,Pop,G#: A/G,A4 E4 C#4 G3
+31,Pop,A: FM7/A,C5 F4 E4 A3
+31,Pop,A#: F/Bb,A4 F4 C4 A#3
+31,Pop,B: G7/B,G4 F4 D4 B3
+32,Pop,C: Cmb13,D#4 G#3 G3 C3
+32,Pop,C#: D#M7,G4 D4 A#3 D#3
+32,Pop,D: G7/D,F4 B3 G3 D3
+32,Pop,D#: A#/D#,F4 D4 A#3 D#3
+32,Pop,E: C7,E4 A#3 G3 C3
+32,Pop,F: Fm7,G#4 D#4 C4 F3
+32,Pop,F#: D#,G4 D#4 A#3 D#3
+32,Pop,G: Gm7,F4 D4 A#3 G3
+32,Pop,G#: G#M9,G4 C4 A#3 G#3
+32,Pop,A: G#m6,F4 D#3 B3 G#3
+32,Pop,A#: F7/A,F4 D#4 C3 A3
+32,Pop,B: A#add11,A#4 D#4 D4 A#3
+33,Cinematic,C: CM7,B3 G3 E3 C3
+33,Cinematic,C#: F/E,C4 A3 F3 E3
+33,Cinematic,D: A#M7,D4 A3 F3 A#2
+33,Cinematic,D#: G,D4 B3 G3 G2
+33,Cinematic,E: Dm7,F4 C4 F3 D3
+33,Cinematic,F: C,E4 C4 G3 C3
+33,Cinematic,F#: A#M7,F4 D4 A3 A#2
+33,Cinematic,G: G,G4 D4 B3 G2
+33,Cinematic,G#: C,E4 C4 G3 C3
+33,Cinematic,A: A/C#,E4 C#4 A3 C#3
+33,Cinematic,A#: Dm,F4 D4 A3 D3
+33,Cinematic,B: G/F,G4 D4 B3 F3
+34,Cinematic/Synthwave,C: Csus2,D4 G3 D3 C3
+34,Cinematic/Synthwave,C#: Dsus2,E4 A3 E3 D3
+34,Cinematic/Synthwave,D: D#sus2,F4 A#3 F3 D#3
+34,Cinematic/Synthwave,D#: Fsus2,G4 C4 G3 F3
+34,Cinematic/Synthwave,E: Gsus2,A4 D4 A3 G3
+34,Cinematic/Synthwave,F: A#sus2,C5 F4 C4 A#3
+34,Cinematic/Synthwave,F#: Csus2,D5 G4 D4 C4
+34,Cinematic/Synthwave,G: Dsus2,E5 A4 E4 D4
+34,Cinematic/Synthwave,G#: D#sus2,F5 A#4 F4 D#4
+34,Cinematic/Synthwave,A: Fsus2,G5 C5 G4 F4
+34,Cinematic/Synthwave,A#: Gsus2,A5 D5 A4 G4
+34,Cinematic/Synthwave,B: A#sus2,C6 F5 C5 A#4
+35,Cinematic/House,C: CM7,B4 E4 G3 C3
+35,Cinematic/House,C#: Am7,G4 C4 E3 A2
+35,Cinematic/House,D: DM7,C#5 F#4 A3 D3
+35,Cinematic/House,D#: Bm7,A4 D4 F#3 B2
+35,Cinematic/House,E: EM7,D#5 G#4 B3 E3
+35,Cinematic/House,F: C#m7,B4 E4 G#3 C#3
+35,Cinematic/House,F#: F#M7,F5 A#4 C#4 F#3
+35,Cinematic/House,G: D#m7,C#5 F#4 A#3 D#3
+35,Cinematic/House,G#: G#M7,G5 C5 D#4 G#3
+35,Cinematic/House,A: Fm7,D#5 G#4 C4 F3
+35,Cinematic/House,A#: A#M7,A5 D5 F4 A#3
+35,Cinematic/House,B: Gm7,F5 A#4 D4 G3
+36,Cinematic,C: Ebsus2/C,Eb4 Bb3 F3 C3
+36,Cinematic,C#: Fsus2/D,F4 C4 G3 D3
+36,Cinematic,D: Gsus2/E,G4 D4 A3 E3
+36,Cinematic,D#: Absus2/F,Ab4 Eb4 Bb3 F3
+36,Cinematic,E: Bbsus2/G,Bb4 F4 C4 G3
+36,Cinematic,F: Csus2/A,C5 G4 D4 A3
+36,Cinematic,F#: Dsus2/B,D5 A4 E4 B3
+36,Cinematic,G: Ebsus2/C,Eb5 Bb4 F4 C4
+36,Cinematic,G#: Fsus2/D,F5 C5 G4 D4
+36,Cinematic,A: Gsus2/E,G5 D5 A4 E4
+36,Cinematic,A#: Absus2/F,Ab5 Eb5 Bb4 F4
+36,Cinematic,B: Bbsus2/G,Bb5 F5 C5 G4
+37,Cinematic,C: C6sus2,A4 D4 G3 C3
+37,Cinematic,C#: Dsus2,A4 E4 A3 D3
+37,Cinematic,D: Emadd11,A4 G4 B3 E3
+37,Cinematic,D#: Dadd9/F#,A4 E4 D4 F#3
+37,Cinematic,E: Gadd9,B4 A4 D4 G3
+37,Cinematic,F: Am7/11,D5 G4 C4 A3
+37,Cinematic,F#: Bm7,D5 A4 F#4 B3
+37,Cinematic,G: C6,E5 A4 G4 C4
+37,Cinematic,G#: D6,F#5 B4 A4 D4
+37,Cinematic,A: Emadd9,F#5 B4 G4 E4
+37,Cinematic,A#: E7sus4,A5 D5 B4 E4
+37,Cinematic,B: Em7b5/F,G5 E5 D5 F4
+38,New Age/Cinematic,C: C,E4 C4 G3 C3
+38,New Age/Cinematic,C#: Gsus4,G4 D4 C4 G3
+38,New Age/Cinematic,D: G7sus4,F4 D4 C4 G3
+38,New Age/Cinematic,D#: A#/D#,F4 D4 A#3 D#3
+38,New Age/Cinematic,E: C/E,E4 C4 G3 E3
+38,New Age/Cinematic,F: Gsus4/F,D4 C4 G3 F3
+38,New Age/Cinematic,F#: D/F#,F#4 D4 A3 F#3
+38,New Age/Cinematic,G: C/G,E4 C4 G3 G2
+38,New Age/Cinematic,G#: E/G#,E4 B3 G#3 G#2
+38,New Age/Cinematic,A: Am,E4 C4 A3 A2
+38,New Age/Cinematic,A#: Fsus4,F4 C4 A#3 F3
+38,New Age/Cinematic,B: G,G4 D4 B3 B2
+39,Synthwave,C: C6sus4,A3 G3 F3 C3
+39,Synthwave,C#: Gmadd9/D,A#3 A3 G3 D3
+39,Synthwave,D: Edim11,A#3 A3 G3 E3
+39,Synthwave,D#: Fsus2/D,C4 G3 F3 D3
+39,Synthwave,E: BbM7,D4 A#3 A3 F3
+39,Synthwave,F: Gmadd9,D4 A#3 A3 G3
+39,Synthwave,F#: Am/G,E4 C4 A3 G3
+39,Synthwave,G: C7/G,E4 C4 A#3 G3
+39,Synthwave,G#: A#M7,F4 D4 A#3 A3
+39,Synthwave,A: Gm/A,G4 D4 A#3 A3
+39,Synthwave,A#: C7/A#,G4 E4 C4 A#3
+39,Synthwave,B: A#m6,G4 F4 C#4 A#3
+40,Synthwave,C: Cadd9,G3 E3 D3 C3
+40,Synthwave,C#: Dadd9,A3 F#3 E3 D3
+40,Synthwave,D: D#add9,A#3 G3 F3 D#3
+40,Synthwave,D#: Fadd9,C4 A3 G3 F3
+40,Synthwave,E: Gadd9,D4 B3 A3 G3
+40,Synthwave,F: G#add9,D#4 C4 A#3 G#3
+40,Synthwave,F#: A#add9,F4 D4 C4 A#3
+40,Synthwave,G: Cadd9,G4 E4 D4 C4
+40,Synthwave,G#: Dadd9,A4 F#4 E4 D4
+40,Synthwave,A: D#add9,A#4 G4 F4 D#4
+40,Synthwave,A#: Fadd9,C5 A4 G4 F4
+40,Synthwave,B: Gadd9,D5 B4 A4 G4
+41,Synthwave,C: C,C4 G3 E3 C2
+41,Synthwave,C#: C#dim7,A#3 G3 E3 C#2
+41,Synthwave,D: Fsus2/D,C4 G3 F3 D2
+41,Synthwave,D#: D#add9,A#3 G3 F3 D#2
+41,Synthwave,E: Csus2/E,C4 G3 D3 E2
+41,Synthwave,F: FM7,C4 A3 E3 F2
+41,Synthwave,F#: F#dim,C4 A3 F#3 F#2
+41,Synthwave,G: Gsus4,C4 G3 D3 G2
+41,Synthwave,G#: G#6,C4 G#3 F3 G#2
+41,Synthwave,A: Csus2/A,C4 G3 D3 A2
+41,Synthwave,A#: Csus2/A#,C4 G3 D3 A#2
+41,Synthwave,B: G7/B,B3 G3 F3 B2
+42,Synthwave,C: C,C5 E4 G3 C3
+42,Synthwave,C#: A#sus2/D#,C5 F4 A#3 D#3
+42,Synthwave,D: A#7/G#,A#4 F4 G#3 G#2
+42,Synthwave,D#: G/B,B4 D4 G3 B2
+42,Synthwave,E: C,C5 E4 G3 C3
+42,Synthwave,F: Fm,C5 F4 G#3 F2
+42,Synthwave,F#: F#dim7,C5 D#4 A3 F#2
+42,Synthwave,G: C,C5 E4 G3 G2
+42,Synthwave,G#: G#add9,C5 D#4 A#3 G#2
+42,Synthwave,A: F/A,C5 F4 A3 A2
+42,Synthwave,A#: A#,D5 F4 A#3 A#2
+42,Synthwave,B: G7/B,D5 F4 G3 B2
+43,Synthwave,C: Cm7,G4 D#4 A#3 C3
+43,Synthwave,C#: A#/C,F4 D4 A#3 C3
+43,Synthwave,D: D#/G#,G4 D#4 A#3 G#2
+43,Synthwave,D#: A#/G#,F4 D4 A#3 G#2
+43,Synthwave,E: D#/F,G4 D#4 A#3 F3
+43,Synthwave,F: A#/F,F3 D4 A#3 F3
+43,Synthwave,F#: G#add9,D#4 C4 A#3 G#2
+43,Synthwave,G: A#,F4 D4 A#3 A#2
+43,Synthwave,G#: G#M7,D#4 C4 G3 G#2
+43,Synthwave,A: Fsus2/A,F4 C4 G3 A2
+43,Synthwave,A#: A#6,F4 D4 G3 A#2
+43,Synthwave,B: Fm7/B,F4 D#4 G#3 B2
+44,Synthwave,C: Cm7,A#4 G4 D#4 C3
+44,Synthwave,C#: C#sus2/F,G#4 D#4 C#4 F3
+44,Synthwave,D: Gm7,A#4 F4 D4 G3
+44,Synthwave,D#: D#,A#4 D#4 G3 D#3
+44,Synthwave,E: Csus2/E,G4 D4 C4 E3
+44,Synthwave,F: Fm,G#4 F4 C4 F3
+44,Synthwave,F#: D#dim7,A4 D#4 C4 F#3
+44,Synthwave,G: G#sus2/G,A#4 D#4 G#3 G3
+44,Synthwave,G#: Cm7,A#4 D#4 C4 C3
+44,Synthwave,A: F7,A4 D#4 C4 F3
+44,Synthwave,A#: Fm7,G#4 D#4 C4 F3
+44,Synthwave,B: G5,G4 D4 D3 G3
+45,Synthwave,C: Ab,Ab3 Eb3 C3
+45,Synthwave,C#: Fm,Ab3 F3 C3
+45,Synthwave,D: Gm,Bb3 G3 D3
+45,Synthwave,D#: Ab,C4 Ab3 Eb3
+45,Synthwave,E: Fm,C4 Ab3 F3
+45,Synthwave,F: Bb,D3 Bb3 F3
+45,Synthwave,F#: Gm,D4 Bb3 G3
+45,Synthwave,G: Cm,Eb4 C4 G3
+45,Synthwave,G#: Ab,Eb4 C4 Ab3
+45,Synthwave,A: Fm,F4 C4 Ab3
+45,Synthwave,A#: Bb,F4 D4 Bb3
+45,Synthwave,B: Cm,G4 Eb4 C4
+46,Synthwave,C: C,E3 G2 C2
+46,Synthwave,C#: D,F#3 A2 D2
+46,Synthwave,D: Em,G3 B2 E2
+46,Synthwave,D#: D,A3 D3 F#2
+46,Synthwave,E: G,B3 D3 G2
+46,Synthwave,F: Am,C4 E3 A2
+46,Synthwave,F#: Bm,D4 F#3 B2
+46,Synthwave,G: C,E4 G3 C3
+46,Synthwave,G#: D,F#4 A3 D3
+46,Synthwave,A: Em,G4 B3 E3
+46,Synthwave,A#: D,A4 D4 F#3
+46,Synthwave,B: G,B4 D4 G3
+47,Synthwave/House,C: Cm7,A#3 G3 D#3 C3
+47,Synthwave/House,C#: D#M7,D4 A#3 G3 D#3
+47,Synthwave/House,D: Dm7,C4 A3 F3 D3
+47,Synthwave/House,D#: Fm7,D#4 C4 G#3 F3
+47,Synthwave/House,E: D#M7,D4 A#3 G3 D#3
+47,Synthwave/House,F: Gm7,F4 D4 A#3 G3
+47,Synthwave/House,F#: Fm7,D#4 C4 G#3 F3
+47,Synthwave/House,G: G#M7,G4 D#4 C4 G#3
+47,Synthwave/House,G#: Gm7,F4 D4 A#3 G3
+47,Synthwave/House,A: A#7,G#4 F4 D4 A#3
+47,Synthwave/House,A#: G#M7,G4 D#4 C4 G#3
+47,Synthwave/House,B: C#/C,G#4 F4 C#4 C4
+48,Trance,C: Cm,Eb4 G3 C3 C2
+48,Trance,C#: Ab/C,Eb4 Ab3 C3 C2
+48,Trance,D: Bb/D,F4 Bb3 F3 D2
+48,Trance,D#: Eb,G4 Bb3 Bb2 Eb2
+48,Trance,E: C/E,G4 C4 G3 E2
+48,Trance,F: Fm,Ab4 C4 F3 F2
+48,Trance,F#: F,A4 C4 F3 F2
+48,Trance,G: Gm,Bb4 D4 G3 G2
+48,Trance,G#: Ab,C4 Eb3 Ab2 Ab1
+48,Trance,A: F7/A,C4 F3 Eb3 A1
+48,Trance,A#: Bb,D4 F3 Bb2 Bb1
+48,Trance,B: G7/B,D4 G3 F3 B1
+49,House,C: Cm7,Eb4 Bb3 G3 C3
+49,House,C#: C#m7,E4 B3 G#3 C#3
+49,House,D: Dm7,F4 C4 A3 D3
+49,House,D#: EbM7,G4 D4 Bb3 Eb3
+49,House,E: Gm/E,G4 D4 Bb3 E3
+49,House,F: Eb/F,G4 Eb4 Bb3 F3
+49,House,F#: D7/F#,C4 A3 D3 F#2
+49,House,G: Gm7,Bb3 F3 D3 G2
+49,House,G#: AbM7,C4 G3 Eb3 Ab2
+49,House,A: Ab/Bb,Eb4 C4 Ab3 Bb2
+49,House,A#: BbM7,D4 A3 F3 Bb2
+49,House,B: Bm7b5,D4 A3 F3 B2
+50,House,C: Cmaj7,E4 B3 G3 C3
+50,House,C#: Dmaj7,F#4 C#4 A3 D3
+50,House,D: Em7,G4 D4 B3 E3
+50,House,D#: Fmaj9,G4 E4 C4 F3
+50,House,E: Gmaj9,A4 F#4 D4 G3
+50,House,F: Eadd9/G#,B4 F#4 E4 G#3
+50,House,F#: Am7,C5 G4 E4 A3
+50,House,G: Bm7,D5 A4 F#4 B3
+50,House,G#: Cmaj9,D5 B4 G4 C4
+50,House,A: Dm7/9,E5 C5 F4 D4
+50,House,A#: Em7,G5 D5 B4 E4
+50,House,B: Fmaj7,A5 E5 C5 F4
+51,House,C: Cm7,A#3 G3 D#3 C3
+51,House,C#: G#/C#,C4 G#3 D#3 C#3
+51,House,D: Dm7,C4 A3 F3 D3
+51,House,D#: A#/D#,D4 A#3 F3 D#3
+51,House,E: Em7,D4 B3 G3 E3
+51,House,F: C/F,E4 C4 G3 F3
+51,House,F#: F#m7,E4 C#4 A3 F#3
+51,House,G: D/G,F#4 D4 A3 G3
+51,House,G#: G#m7,F#4 D#4 B3 G#3
+51,House,A: E/A,G#4 E4 B3 A3
+51,House,A#: A#m7,G#4 F4 C#4 A#3
+51,House,B: F#/B,A#4 F#4 C#4 B3
+52,House,C: Cm7,A#4 D#4 G3 C3
+52,House,C#: G#M7,G4 C4 D#3 G#2
+52,House,D: Dm7,C5 F4 A3 D3
+52,House,D#: A#M7,A4 D4 F3 A#2
+52,House,E: Em7,D5 G4 B3 E3
+52,House,F: CM7,B4 E4 G3 C3
+52,House,F#: F#m7,E5 A4 C#4 F#3
+52,House,G: DM7,C#5 F#4 A3 D3
+52,House,G#: G#m7,F#5 B4 D#4 G#3
+52,House,A: EM7,D#5 G#4 B3 E3
+52,House,A#: A#m7,G#5 C#5 F4 A#3
+52,House,B: F#M7,F5 A#4 C#4 F#3
+53,House,C: Cm7/11,F4 A#3 D#3 C3
+53,House,C#: Cdim7,F#4 A3 D#3 C3
+53,House,D: C#M7/b5,G4 C4 F3 C#3
+53,House,D#: Ddim7,G#4 B3 F3 D3
+53,House,E: Cm,G4 C4 G3 D#3
+53,House,F: C#M7,F4 C4 F3 C#3
+53,House,F#: CM7,E4 B3 G3 C3
+53,House,G: Em7,G4 D4 B3 E3
+53,House,G#: FM7,A4 E4 C4 F3
+53,House,A: Fm6,G#4 D4 C4 F3
+53,House,A#: Csus2/E,G4 D4 C4 E3
+53,House,B: Fm,F4 C4 G#3 F3
+54,House,C: CM7,B3 G3 E3 C3
+54,House,C#: Em7,D4 B3 G3 E3
+54,House,D: Dm7,C4 A3 F3 D3
+54,House,D#: FM7,E4 C4 A3 F3
+54,House,E: D#M7,D4 A#3 G3 D#3
+54,House,F: Gm7,F4 D4 A#3 G3
+54,House,F#: FM7,E4 C4 A3 F3
+54,House,G: Am7,G4 E4 C4 A3
+54,House,G#: Gm7,F4 D4 A#3 G3
+54,House,A: A#M7,A4 F4 D4 A#3
+54,House,A#: Am7,G4 E4 C4 A3
+54,House,B: Bm7,A4 F#4 D4 B3
+55,Jazz House,C: CM13,B4 A4 E4 C4
+55,Jazz House,C#: CM7#5,B4 G#4 E4 C4
+55,Jazz House,D: Dm7b5,C5 Ab4 F4 D4
+55,Jazz House,D#: G7,B4 G4 F4 D4
+55,Jazz House,E: Cadd9/E,D5 C5 G4 E4
+55,Jazz House,F: Fadd9,C5 A4 G4 F4
+55,Jazz House,F#: FmAdd9,C5 Ab4 G4 F4
+55,Jazz House,G: G9,F5 B4 A4 G4
+55,Jazz House,G#: E7/G#,E5 D5 B4 G#4
+55,Jazz House,A: Am9/11,B5 D5 C5 A4
+55,Jazz House,A#: Gm11/Bb,G5 D5 C5 Bb4
+55,Jazz House,B: CM7#5/G#,E5 C5 B4 G#4
+56,Jazz House,C: Cm7,Eb5 Bb4 C4 G3
+56,Jazz House,C#: Db6,F5 Bb4 Db4 Ab3
+56,Jazz House,D: Dm7,F5 C5 D4 A3
+56,Jazz House,D#: Dm7b5,F5 C5 D4 Ab3
+56,Jazz House,E: EbM7,G5 D5 Eb4 Bb3
+56,Jazz House,F: Fm7,Ab5 Eb5 F4 C4
+56,Jazz House,F#: Gb6,Bb5 Eb5 Gb4 Db4
+56,Jazz House,G: Gm7,Bb5 F5 G4 D4
+56,Jazz House,G#: Ab6,C6 F5 Ab4 Eb4
+56,Jazz House,A: AbM7,C6 G5 Ab4 Eb4
+56,Jazz House,A#: Am7,C6 G5 A4 E4
+56,Jazz House,B: BbM7,D6 A5 Bb4 F4
+57,House/Techno,C: C5b9,C4 G3 C#3 C3
+57,House/Techno,C#: DbM7,C4 G#3 F3 C#3
+57,House/Techno,D: Dm7,C4 A3 F3 D3
+57,House/Techno,D#: Ebsus11,C#4 A#3 G#3 D#3
+57,House/Techno,E: EM7#11,D#4 A#3 G#3 E3
+57,House/Techno,F: Fm9,C4 G#3 G3 F3
+57,House/Techno,F#: GbM7#11,F4 C3 A#3 F#3
+57,House/Techno,G: Gm7,F4 D3 A#3 G3
+57,House/Techno,G#: AbM7#11,G4 D4 C4 G#3
+57,House/Techno,A: A7alt,G4 C#4 C4 A3
+57,House/Techno,A#: Bb5add9/b13,F4 C4 F#3 A#2
+57,House/Techno,B: C7sus4,A#3 G3 F3 C3
+58,Techno,C: Cm7,G4 D#4 A#3 C3
+58,Techno,C#: A#m/C#,F4 C#4 A#3 C#3
+58,Techno,D: A#/D,F4 D4 A#3 D3
+58,Techno,D#: D#,G4 D#4 A#3 D#3
+58,Techno,E: C/E,G4 E4 C4 E2
+58,Techno,F: Cm/F,G4 D#4 C4 F2
+58,Techno,F#: D/F#,A4 F#4 D4 F#2
+58,Techno,G: G,G4 D4 B3 G2
+58,Techno,G#: G#M7,G4 D#4 C4 G#2
+58,Techno,A: Csus4/A,G4 F4 C4 A2
+58,Techno,A#: D#/A#,G4 D#4 A#3 A#2
+58,Techno,B: G/B,G4 D4 B3 B2
+59,EDM,C: CM9,B3 A3 D3 C3
+59,EDM,C#: C6,F#3 B3 E3 D#3
+59,EDM,D: Dm9,C#4 B3 E3 D3
+59,EDM,D#: Dm6,G#4 C#4 F#3 F3
+59,EDM,E: EM9,D#4 C#4 F#3 E3
+59,EDM,F: FM9,E4 D4 G3 F3
+59,EDM,F#: F6,B4 E4 A3 G#3
+59,EDM,G: GM9,F#4 E4 A3 G3
+59,EDM,G#: G6,C#4 F#4 B3 A#3
+59,EDM,A: Am9,G#5 F#4 B3 A3
+59,EDM,A#: Am6,D#5 G#4 C#4 C4
+59,EDM,B: Bm9,A#5 G#4 C#4 B3
+60,EDM,C: CM13(no 3),B3 A3 D3 C3
+60,EDM,C#: EM9(no 3),F#4 B3 E3 D#3
+60,EDM,D: DM13(no 3),C#4 B3 E3 D3
+60,EDM,D#: F#M9(no 3),G#4 C#4 F#3 F3
+60,EDM,E: EM13(no 3),D#4 C#4 F#3 E3
+60,EDM,F: FM13(no3),E4 D4 G3 F3
+60,EDM,F#: AM9(no3),B4 E4 A3 G#3
+60,EDM,G: GM13(no3),F#4 E4 A3 G3
+60,EDM,G#: BM9(no3),C#5 F#4 B3 A#3
+60,EDM,A: AM13(no3),G#4 F#4 B3 A3
+60,EDM,A#: C#M9(no 3),D#5 G#4 C#4 C4
+60,EDM,B: BM13(no3),A#4 G#4 C#4 B3
+61,EDM,C: Csus9/13,A4 D4 G3 C3
+61,EDM,C#: C6,E5 A4 G3 C3
+61,EDM,D: Dsus9/13,B4 E4 A3 D3
+61,EDM,D#: D6,F#5 B4 A3 D3
+61,EDM,E: Esus9/13,C#5 F#4 B3 E3
+61,EDM,F: Fsus9/13,D5 G4 C4 F3
+61,EDM,F#: F6,A4 D5 C4 F3
+61,EDM,G: Gsus9/13,E5 A4 D4 G3
+61,EDM,G#: G6,B4 E4 D4 G3
+61,EDM,A: Asus9/13,F#5 B4 E4 A3
+61,EDM,A#: A6,C#5 F#4 E4 A3
+61,EDM,B: Bsus9/13,G#5 C#5 F#4 B3
+62,EDM,C: CM13,E4 B3 A3 C3
+62,EDM,C#: C#sus9,D#4 A#3 F#3 C#3
+62,EDM,D: DM13,F#4 C#4 B3 D3
+62,EDM,D#: D#sus9,F4 A#3 G#3 D#3
+62,EDM,E: EM13,G#4 D#4 C#4 E3
+62,EDM,F: FM13,A4 E4 D4 F3
+62,EDM,F#: F#sus9,G#4 C#4 B3 F#3
+62,EDM,G: GMaj13,B4 F#4 E4 G3
+62,EDM,G#: Absus9,A#4 D#4 C#4 G#3
+62,EDM,A: AM13,C#5 G#4 F#4 A3
+62,EDM,A#: Bbsus9,C5 F4 D#4 A#3
+62,EDM,B: BM13,D#5 A#4 G#4 B3
+63,EDM,C: CM7,E4 B3 C3 G2
+63,EDM,C#: Dbm7,E4 B3 C#3 G#2
+63,EDM,D: Dm7,F4 C4 D3 A2
+63,EDM,D#: Eb6,G4 C4 D#3 A#2
+63,EDM,E: Em7,G4 D4 E3 B2
+63,EDM,F: FM7,A4 E4 F3 C3
+63,EDM,F#: Gbm7,A4 E4 F#3 C#3
+63,EDM,G: GM7,B4 F#4 G3 D3
+63,EDM,G#: Abm7,B4 F#4 G#3 D#3
+63,EDM,A: Am7,C5 G4 A3 E3
+63,EDM,A#: Bb6,D5 G4 B3 F3
+63,EDM,B: Bm7,D5 A4 B3 F#3
+64,EDM,C: C6,E4 A3 G3 C3
+64,EDM,C#: AM7,E4 A3 G#3 C#3
+64,EDM,D: D6,F#4 B3 A3 D3
+64,EDM,D#: BM7,F#4 B3 A#3 D#3
+64,EDM,E: E6,G#4 C#4 B3 E3
+64,EDM,F: F6,A4 D4 C4 F3
+64,EDM,F#: DM7,A4 D4 C#4 F#3
+64,EDM,G: G6,B4 E4 D4 G3
+64,EDM,G#: EM7,B4 E4 D#4 G#3
+64,EDM,A: A6,C#5 F#4 E4 A3
+64,EDM,A#: GbM7,C#5 F#4 F4 A#3
+64,EDM,B: B6,D#5 G#4 F#4 B3
+65,Gospel/R&B,C: G/C,G4 D4 B3 C3
+65,Gospel/R&B,C#: C#dim7,G4 E4 A#3 C#3
+65,Gospel/R&B,D: Dm7b5,F4 C4 Ab3 D3
+65,Gospel/R&B,D#: D#dim7,F#4 C4 A3 D#3
+65,Gospel/R&B,E: Em7,G4 D4 B3 E3
+65,Gospel/R&B,F: Fm11,Eb4 Bb3 Ab3 F2
+65,Gospel/R&B,F#: F#dim7,D#4 A3 C3 F#2
+65,Gospel/R&B,G: Gm7b13,Eb4 Bb3 F3 G2
+65,Gospel/R&B,G#: G#M9,G4 C4 A#3 G#2
+65,Gospel/R&B,A: Am7/b13,F4 C3 G3 A2
+65,Gospel/R&B,A#: A#m7 add 13,G4 C#4 G#3 A#2
+65,Gospel/R&B,B: Bm7/b13,G4 D3 A3 B2
+66,Gospel/R&B,C: Cm7/b13,F4 Bb3 Ab3 C3
+66,Gospel/R&B,C#: C#M13,F4 C4 A#3 C#3
+66,Gospel/R&B,D: Dm7/b13,F4 C4 Bb3 D3
+66,Gospel/R&B,D#: D#m11,F#4 C#4 G#3 D#3
+66,Gospel/R&B,E: D/E,F#4 D4 A3 E3
+66,Gospel/R&B,F: G#m/F,G#4 D#4 B3 F3
+66,Gospel/R&B,F#: F#6,A#4 D#4 C#4 F#3
+66,Gospel/R&B,G: A#m/G,A#4 F4 C#4 G3
+66,Gospel/R&B,G#: G#m11,B4 F#4 C#4 G#3
+66,Gospel/R&B,A: AM9,B4 E4 C#4 A3
+66,Gospel/R&B,A#: A#7/b13,G#4 F#4 D4 A#3
+66,Gospel/R&B,B: F#/B,A#4 F#4 C#4 B3
+67,Gospel/R&B,C: D,D4 A3 F#3 D2
+67,Gospel/R&B,C#: C/D,C4 G3 E3 D2
+67,Gospel/R&B,D: D/E,D4 A3 F#3 E2
+67,Gospel/R&B,D#: Dm/F,D4 A3 F3 F2
+67,Gospel/R&B,E: Dsus2/F#,D4 A3 E3 F#2
+67,Gospel/R&B,F: Gadd9,D4 B3 A3 G2
+67,Gospel/R&B,F#: E/G#,E4 B3 G#3 G#2
+67,Gospel/R&B,G: A,E4 C#4 A3 A1
+67,Gospel/R&B,G#: A#dim7,C#4 G3 E3 A#1
+67,Gospel/R&B,A: Bm7,D4 A3 F#3 B1
+67,Gospel/R&B,A#: D/C,D4 A3 F#3 C2
+67,Gospel/R&B,B: C#dim,C#4 G3 E3 C#2
+68,Lofi R&B,C: Cmadd9,D#4 D4 G3 C3
+68,Lofi R&B,C#: Abadd9/C,D#4 A#3 G#3 C3
+68,Lofi R&B,D: Bb7/D,F4 A#3 G#3 D3
+68,Lofi R&B,D#: EbM9,D4 G3 F3 D#3
+68,Lofi R&B,E: Eb7/b9,C#4 G3 E3 D#3
+68,Lofi R&B,F: Fm9,D#4 G#3 G3 F3
+68,Lofi R&B,F#: GbM6/9,D#4 A#3 G#3 F#3
+68,Lofi R&B,G: Gm7,F4 D4 A#3 G3
+68,Lofi R&B,G#: Eb/Ab,G4 D#4 A#3 G#3
+68,Lofi R&B,A: Fsus4/A,F4 C4 A#3 A3
+68,Lofi R&B,A#: Bbsus,F4 D#4 D4 A#3
+68,Lofi R&B,B: Bbsus4/b9,A#4 D#4 B3 A#3
+69,Lofi R&B,C: Ab7/C,G#3 F#3 D#3 C3
+69,Lofi R&B,C#: C#m11,B3 F#3 E3 C#3
+69,Lofi R&B,D: DM9,C#4 F#3 E3 D3
+69,Lofi R&B,D#: Bsus4/Eb,B3 F#3 E3 D#3
+69,Lofi R&B,E: EM add2,B3 G#3 F#3 E3
+69,Lofi R&B,F: DM7#11,C#4 G#3 F#3 D3
+69,Lofi R&B,F#: F#m11,E3 B2 A2 F#2
+69,Lofi R&B,G: G6,E3 B2 A2 G2
+69,Lofi R&B,G#: Abm7,F#3 D#3 B2 G#2
+69,Lofi R&B,A: AM7add6,G#3 F#3 C#3 A2
+69,Lofi R&B,A#: F#add9/A#,G#3 F#3 C#3 A#2
+69,Lofi R&B,B: BM add4,F#3 E3 D#3 B2
+70,Funk,C: C9,D4 Bb3 E3 C2
+70,Funk,C#: C/D,E4 C4 G3 D2
+70,Funk,D: D7b9,Eb4 C4 F#3 D2
+70,Funk,D#: EbM7,D4 Bb3 G3 Eb2
+70,Funk,E: Em7b13,D4 C4 G3 E2
+70,Funk,F: Eb/F,Eb4 Bb3 G3 F2
+70,Funk,F#: F#13,Eb4 Bb3 E3 F#2
+70,Funk,G: G7,D4 B3 F3 G2
+70,Funk,G#: Abm6 add b13,E4 B3 F3 Ab2
+70,Funk,A: Am7,E4 C4 G3 A2
+70,Funk,A#: Bm7,F#4 D4 A3 B2
+70,Funk,B: B7,F#4 D#4 A3 B2
+71,Funk,C: C7alt,Eb4 Ab3 E3 C3
+71,Funk,C#: DbM7,F4 C4 Ab3 Db3
+71,Funk,D: D7alt,F4 C4 F#3 D3
+71,Funk,D#: Eb7,G4 Db4 Bb3 Eb3
+71,Funk,E: C7/E,G4 C4 Bb3 E3
+71,Funk,F: F7alt,Ab4 Eb4 A3 F3
+71,Funk,F#: F11sus2,G4 Eb4 Bb3 F3
+71,Funk,G: Gm7b5,F4 Db4 Bb3 G3
+71,Funk,G#: Ab9,Bb4 Gb4 C4 Ab3
+71,Funk,A: Bb9sus,Ab4 Eb4 C4 Bb3
+71,Funk,A#: Bb7add9,Ab4 D4 C4 Bb3
+71,Funk,B: C11sus2,D4 Bb3 F3 C3
+72,Neo Soul,C: Cm9,D4 A#3 D#3 C3
+72,Neo Soul,C#: AbM7,C4 G#3 G3 D#3
+72,Neo Soul,D: Dm7,C4 A3 F3 D3
+72,Neo Soul,D#: EbDimM7,D4 A3 F#3 D#3
+72,Neo Soul,E: EbM7,D4 A#3 G3 D#3
+72,Neo Soul,F: Fm7,D#4 C4 G#3 F3
+72,Neo Soul,F#: CM7#5,E4 C4 G#3 G3
+72,Neo Soul,G: Gm7,F4 D4 A#3 G3
+72,Neo Soul,G#: G7#5,F4 D#4 B3 G3
+72,Neo Soul,A: AbM7,G4 D#4 C4 G#3
+72,Neo Soul,A#: Fm7b5/B,G#4 F4 D#4 B3
+72,Neo Soul,B: Bb13/D,G4 A#3 G#3 D3
+73,Neo Soul,C: Cm7,Bb4 G4 Eb4 C4
+73,Neo Soul,C#: C#dim7,A#4 G4 E4 C#4
+73,Neo Soul,D: Fm7,Ab4 F4 Eb4 C4
+73,Neo Soul,D#: Fm7/b5,Ab4 F4 Eb4 B3
+73,Neo Soul,E: EbM7,Bb4 G4 Eb4 D4
+73,Neo Soul,F: Cm7/Eb,C5 Bb4 G4 Eb4
+73,Neo Soul,F#: Edim,Db5 Bb4 G4 E4
+73,Neo Soul,G: AbM7,C5 Ab4 G4 Eb4
+73,Neo Soul,G#: Fm7,Eb5 C5 Ab4 F4
+73,Neo Soul,A: AbM13,F5 C5 Ab4 G4
+73,Neo Soul,A#: Bb13,G5 D5 Bb4 Ab4
+73,Neo Soul,B: Bb6,G5 F5 D5 Bb4
+74,Neo Soul,C: Em7/D,B3 G3 E3 D3
+74,Neo Soul,C#: Gm7b5/C#,A#3 G3 F3 C#3
+74,Neo Soul,D: FM7/E,C4 A3 F3 E3
+74,Neo Soul,D#: DMb7/D#,D4 A3 F#3 D#3
+74,Neo Soul,E: GM7/F#,D4 B3 G3 F#3
+74,Neo Soul,F: Edim7,C#4 A#3 G3 E3
+74,Neo Soul,F#: Cadd13/E,C4 A3 G3 E3
+74,Neo Soul,G: E,E4 B3 G#3 E3
+74,Neo Soul,G#: Gaddb9/G#,G4 D4 B3 G#3
+74,Neo Soul,A: Am9,G4 C4 B3 A3
+74,Neo Soul,A#: Dm7,F4 C4 F3 D3
+74,Neo Soul,B: Emb9/F,E4 B3 G3 F3
+75,Neo Soul,C: CM7,B4 E4 C4 G3
+75,Neo Soul,C#: C#m7,B4 E4 C#4 G#3
+75,Neo Soul,D: Dm7,C5 F4 D4 A3
+75,Neo Soul,D#: EbM7,D5 G4 Eb4 Bb3
+75,Neo Soul,E: Em7,D5 G4 E4 B3
+75,Neo Soul,F: FM7,E5 A4 F4 C4
+75,Neo Soul,F#: Gb7,E5 Bb4 Gb4 Db4
+75,Neo Soul,G: GM7,F#5 B4 G4 D4
+75,Neo Soul,G#: AbM7,G5 C5 Ab4 Eb4
+75,Neo Soul,A: Am7,G5 C5 A4 E4
+75,Neo Soul,A#: BbM7,A5 D5 Bb4 F4
+75,Neo Soul,B: Bm7,A5 D5 B4 F#4
+76,Neo-Soul,C: CM7sus2,B3 G3 D3 C3
+76,Neo-Soul,C#: Gadd9/B,D4 A3 G3 B2
+76,Neo-Soul,D: DM7sus2,C#4 A3 E3 D3
+76,Neo-Soul,D#: E6sus4/C#,E4 B3 A3 C#3
+76,Neo-Soul,E: EM7sus2,D#4 B3 F#3 E3
+76,Neo-Soul,F: F#6sus4/D#,F#4 C#4 B3 D#3
+76,Neo-Soul,F#: F#M7sus2,F4 C#4 G#3 F#3
+76,Neo-Soul,G: G#6sus4/F,G#4 D#4 C#4 F3
+76,Neo-Soul,G#: G#M7sus2,G4 D#4 A#3 G#3
+76,Neo-Soul,A: A#6sus4/G,A#4 F4 D#4 G3
+76,Neo-Soul,A#: A#M7sus2,A4 F4 C4 A#3
+76,Neo-Soul,B: Fadd9/A,C5 G4 F4 A3
+77,Neo-Soul,C: CM7,E4 B3 G3 C3
+77,Neo-Soul,C#: C#m7,E4 B3 G#3 C#3
+77,Neo-Soul,D: DM7,F#4 C#4 A3 D3
+77,Neo-Soul,D#: D#m7,F#4 C#4 A#3 D#3
+77,Neo-Soul,E: EM7,G#4 D#4 B3 E3
+77,Neo-Soul,F: Fm7,G#4 D#4 C4 F3
+77,Neo-Soul,F#: F#M7,A#4 F4 C#4 F#3
+77,Neo-Soul,G: Gm7,A#4 F4 D4 G3
+77,Neo-Soul,G#: AbM7,C5 G4 D#4 G#3
+77,Neo-Soul,A: Am7,C5 G4 E4 A3
+77,Neo-Soul,A#: BbM7,D5 A4 F4 A#3
+77,Neo-Soul,B: Bm7,D5 A4 F#4 B3
+78,Neo-Soul,C: C11sus,Bb4 F4 D4 C4
+78,Neo-Soul,C#: A7/C#,A4 E4 G3 C#3
+78,Neo-Soul,D: Dm7,F4 C4 A3 D3
+78,Neo-Soul,D#: EbM7,D4 Bb3 G3 Eb3
+78,Neo-Soul,E: C7/E,C4 Bb3 G3 E3
+78,Neo-Soul,F: F6,D4 C4 A3 F3
+78,Neo-Soul,F#: D7/F#,D4 C4 A3 F#3
+78,Neo-Soul,G: Gdim7,E4 Db4 Bb3 G3
+78,Neo-Soul,G#: E7/G#,E4 D4 B3 G#3
+78,Neo-Soul,A: F6/A,F4 D4 C4 A3
+78,Neo-Soul,A#: Bb6,G4 F4 D4 Bb3
+78,Neo-Soul,B: Bm7b5,A4 F4 D4 B3
+79,Neo-Soul,C: Ab/C,Ab3 Eb3 C3
+79,Neo-Soul,C#: Db,Ab3 F3 Db3
+79,Neo-Soul,D: Bb/D,Bb3 F3 D3
+79,Neo-Soul,D#: Ebm,Bb3 Gb3 Eb3
+79,Neo-Soul,E: C/E,C4 G3 E3
+79,Neo-Soul,F: Db/F,Db4 Ab3 F3
+79,Neo-Soul,F#: Gb,Db4 Bb3 Gb3
+79,Neo-Soul,G: Eb/G,Eb4 Bb3 G3
+79,Neo-Soul,G#: Db/Ab,F4 Db4 Ab3
+79,Neo-Soul,A: F7/A,F4 Eb4 A3
+79,Neo-Soul,A#: Ebm/Bb,Gb4 Eb4 Bb3
+79,Neo-Soul,B: B,F#4 D#4 B3
+80,Neo-Soul,C: Cm7b5,D#4 A#3 F#3 C3
+80,Neo-Soul,C#: Db7sus,F#4 D#4 B3 C#3
+80,Neo-Soul,D: Bbadd2/D,F4 C4 A#3 D3
+80,Neo-Soul,D#: Ebm7,F#4 C#4 A#3 D#3
+80,Neo-Soul,E: EM7,G#4 D#4 B3 E3
+80,Neo-Soul,F: Fmb6,G#4 C#4 C4 F3
+80,Neo-Soul,F#: GbM9,F4 C#4 G#3 F#3
+80,Neo-Soul,G: Ebadd9/G,F4 D#4 A#3 G3
+80,Neo-Soul,G#: Ab7sus,F#4 C#4 A#3 G#3
+80,Neo-Soul,A: AdimM7,G#4 D#4 C4 A3
+80,Neo-Soul,A#: Bbm9,G#4 C#4 C4 A#3
+80,Neo-Soul,B: Gb/B,A#4 F#4 C#4 B3
+81,Neo-Soul,C: C7alt,Eb3 Ab3 E3 C3
+81,Neo-Soul,C#: DbM7add6,C4 Bb3 F3 Db3
+81,Neo-Soul,D: Bb7/D,Bb3 Ab3 F3 D3
+81,Neo-Soul,D#: Db/Eb,Ab3 F3 Db3 Eb2
+81,Neo-Soul,E: Edim7,G3 Db3 Bb2 E2
+81,Neo-Soul,F: Fm9,G3 Eb3 Ab2 F2
+81,Neo-Soul,F#: Gb6/9,Ab3 Eb3 Bb2 Gb2
+81,Neo-Soul,G: Gm7b5,C4 F3 Db3 G2
+81,Neo-Soul,G#: Eb/Ab,Bb3 G3 Eb3 Ab2
+81,Neo-Soul,A: F7/A,C4 F3 Eb3 A2
+81,Neo-Soul,A#: Bbm9,C4 F3 Db3 Bb2
+81,Neo-Soul,B: BM7#11,Bb3 F3 Eb3 B2
+82,Jazz/Bossa,C: Gm7,D4 Bb3 F3 G2
+82,Jazz/Bossa,C#: Bb/Ab,D4 Bb3 F3 Ab2
+82,Jazz/Bossa,D: Am7,E4 C4 G3 A2
+82,Jazz/Bossa,D#: C/Bb,E4 C4 G3 Bb2
+82,Jazz/Bossa,E: Bm7,F#4 D4 A3 B2
+82,Jazz/Bossa,F: D/C,F#4 D4 A3 C3
+82,Jazz/Bossa,F#: C#m7,G#4 E4 B3 C#3
+82,Jazz/Bossa,G: E/D,G#4 E4 B3 D3
+82,Jazz/Bossa,G#: D#m7,A#4 F#4 C#4 D#3
+82,Jazz/Bossa,A: F#/E,A#4 F#4 C#4 E3
+82,Jazz/Bossa,A#: Fm7,C5 Ab4 Eb4 F3
+82,Jazz/Bossa,B: Ab/Gb,C5 Ab4 Eb4 Gb3
+83,Bossa Nova,C: CM9,D5 B4 E4 C4
+83,Bossa Nova,C#: C#dim,E5 A#4 G4 C#4
+83,Bossa Nova,D: Dm7,F5 C5 A4 D4
+83,Bossa Nova,D#: D#dim,B5 F#5 C5 D#4
+83,Bossa Nova,E: CM9/E,G5 D5 C5 E4
+83,Bossa Nova,F: FM9,G5 E5 A4 F4
+83,Bossa Nova,F#: F#dim,A5 D#5 C5 F#4
+83,Bossa Nova,G: Gm9,A5 F5 Bb4 G4
+83,Bossa Nova,G#: C13b9,A5 E5 Db5 C4
+83,Bossa Nova,A: F6,A5 D5 C5 F4
+83,Bossa Nova,A#: BbM9,C6 A5 D5 Bb4
+83,Bossa Nova,B: G13b9,E5 B4 Ab4 G3
+84,Bossa Nova,C: CM7,E5 B4 G4 C4
+84,Bossa Nova,C#: C#Dim,G5 E5 A#4 C#4
+84,Bossa Nova,D: Dm11,G5 F5 C5 D4
+84,Bossa Nova,D#: D#Dim,A5 F#5 C5 D#4
+84,Bossa Nova,E: Em11,A5 G5 D5 E4
+84,Bossa Nova,F: G/F,B5 G5 D5 F4
+84,Bossa Nova,F#: F9#11,B5 G5 Eb5 F4
+84,Bossa Nova,G: Gsus13,E5 C5 F4 G3
+84,Bossa Nova,G#: Abdim7,E5 B4 F4 Ab3
+84,Bossa Nova,A: FM7/A,E5 C5 F4 A3
+84,Bossa Nova,A#: Bb13,G5 D5 Ab4 Bb3
+84,Bossa Nova,B: Eb/B,G5 Eb5 Bb4 B3
+85,Jazz,C: CM7#11,B4 F#4 E4 C3
+85,Jazz,C#: DbM7#11,C5 G4 F4 Db3
+85,Jazz,D: Dm9,E5 G4 F4 D3
+85,Jazz,D#: EbM7#11,D5 A4 G4 Eb3
+85,Jazz,E: Em9,F#5 A4 G4 E3
+85,Jazz,F: FM7#11,E5 B4 A4 F3
+85,Jazz,F#: F#m11,E5 B4 A4 F#3
+85,Jazz,G: G6/9,A5 E5 B4 G3
+85,Jazz,G#: AbM7#11,G5 D5 C5 Ab3
+85,Jazz,A: Am9,B5 D5 C5 A3
+85,Jazz,A#: BbM13,G5 D5 A4 Bb3
+85,Jazz,B: Bm11b5,E5 A4 F4 B3
+86,Jazz,C: CM9,B4 E4 D4 C3
+86,Jazz,C#: Db9#11,Bb4 F4 B3 Db3
+86,Jazz,D: Dm9,C5 F4 E4 D3
+86,Jazz,D#: D13b9/Eb,B4 Gb4 C4 Eb3
+86,Jazz,E: Em11,A4 G4 D4 E3
+86,Jazz,F: FM13,A4 E4 D4 F3
+86,Jazz,F#: E/F,B4 G#4 E4 F3
+86,Jazz,G: FM7/G,E5 A4 F4 G3
+86,Jazz,G#: Ab7#9#5,B5 E5 C5 Ab3
+86,Jazz,A: Am9/11,B5 D5 C5 A3
+86,Jazz,A#: BbM9,A5 D5 C5 Bb3
+86,Jazz,B: Bdim7,G5 D5 Ab4 B3
+87,Jazz,C: Cmaj7,E4 B3 G3 C3
+87,Jazz,C#: Aadd9/C#,E4 B3 A3 C#3
+87,Jazz,D: Dm6,F4 B3 A3 D3
+87,Jazz,D#: B7/D#,F#4 B3 A3 D#3
+87,Jazz,E: Em7,G4 D4 B3 E3
+87,Jazz,F: Fmaj9,G4 E4 A3 F3
+87,Jazz,F#: Dadd9/F#,A4 E4 D4 F#3
+87,Jazz,G: Gm7/9,A4 F4 Bb3 G3
+87,Jazz,G#: Abmaj9,Bb4 G4 C4 Ab3
+87,Jazz,A: Cadd9/G,B4 E4 C4 G3
+87,Jazz,A#: Eadd9/G#,B4 F#4 E4 G#3
+87,Jazz,B: Asus7,D5 B4 G4 A3
+88,Jazz,C: Fmaj7/9,C4 A3 G3 E3
+88,Jazz,C#: Gm7/b5,Db4 Bb3 G3 F3
+88,Jazz,D: Abmaj7/9,Eb4 C4 Bb3 G3
+88,Jazz,D#: Bbm7/b5,E4 Db4 Bb3 Ab3
+88,Jazz,E: Bmaj7/9,F#4 D#4 C#4 A#3
+88,Jazz,F: C#m7/b5,G4 E4 C#4 B3
+88,Jazz,F#: DM7/9,A4 F#4 E4 C#4
+88,Jazz,G: Em7/b5,A#4 G4 E4 D4
+88,Jazz,G#: CM7/9,B4 G4 E4 D4
+88,Jazz,A: Dm7b5/9,C5 Ab4 F4 E4
+88,Jazz,A#: GbM7/9,Db5 Bb4 Ab4 F4
+88,Jazz,B: Abm7/b5,D5 B4 Ab4 Gb4
+89,Jazz,C: Cadd9,G4 E4 D4 C4
+89,Jazz,C#: C#dim7,A#4 G4 E4 C#4
+89,Jazz,D: Gadd13/B,G4 E4 D4 B3
+89,Jazz,D#: D#dim#5,B4 A4 F#4 D#4
+89,Jazz,E: FM7/E,C5 A4 F4 E4
+89,Jazz,F: G7sus2/F,D5 A4 G4 F4
+89,Jazz,F#: D#dim7,C5 A4 F#4 D#4
+89,Jazz,G: C6,A4 G4 E4 C4
+89,Jazz,G#: Ddim7,B4 G#4 F4 D4
+89,Jazz,A: Am/C,C5 A4 E4 C4
+89,Jazz,A#: Dm7b5,C5 G#4 F4 D4
+89,Jazz,B: G7/D,B4 G4 F4 D4
+90,Jazz,C: Em7,D4 B3 G3 E3
+90,Jazz,C#: Edim7,C#4 A#3 G3 E3
+90,Jazz,D: FM7,E4 C4 A3 F3
+90,Jazz,D#: F#dim7,D#4 C4 A3 F#3
+90,Jazz,E: Em7,D4 B3 G3 E3
+90,Jazz,F: C6/E,C4 A3 G3 E3
+90,Jazz,F#: F#dim7,D#4 C4 A3 F#3
+90,Jazz,G: FM7b5,E4 B3 A3 F3
+90,Jazz,G#: Eb7/F,E4 B3 G#3 F3
+90,Jazz,A: Gadd9,D4 B3 A3 G3
+90,Jazz,A#: A#11/F,E4 D4 A#3 F3
+90,Jazz,B: F#dim7,D#4 C4 A3 F#3
+91,Jazz,C: Gm7,D4 A#3 F3 G2
+91,Jazz,C#: G#M7,D#4 C4 G3 G#2
+91,Jazz,D: Am7,E4 C4 G3 A2
+91,Jazz,D#: A#M7,F4 D4 A3 A#2
+91,Jazz,E: G/B,D4 G3 B2
+91,Jazz,F: D#M7,D4 A#3 G3 D#3
+91,Jazz,F#: A#/D,D4 A#3 G3 D#3
+91,Jazz,G: D,D4 A3 F#3 D3
+91,Jazz,G#: CM7sus2,D4 B3 G3 C3
+91,Jazz,A: Em7,D4 B3 G3 E3
+91,Jazz,A#: F6,D4 C4 A3 F3
+91,Jazz,B: C6sus2b5,D4 A3 F#3 C3
+92,Jazz,C: A#M7,A3 F3 D3 A#2
+92,Jazz,C#: BM7,A#3 F#3 D#3 B2
+92,Jazz,D: Cm7b5,A#3 F#3 D#3 C3
+92,Jazz,D#: C#dim7,A#3 G3 E3 C#3
+92,Jazz,E: Em7b5/D,A#3 G3 E3 D3
+92,Jazz,F: Fm7/D#,C4 G#3 F3 D#3
+92,Jazz,F#: Edim7,C#4 A#3 G3 E3
+92,Jazz,G: F7/D#,C4 A3 F3 D#3
+92,Jazz,G#: F#dim7,D#4 C4 A3 F#3
+92,Jazz,A: Gm7/F,D4 A#3 G3 F3
+92,Jazz,A#: G#M7/D#,C4 G#3 G3 D#3
+92,Jazz,B: F7/D#,C4 A3 F3 D#3
+93,Jazz,C: A#M7/A,F3 D3 A#2 A2
+93,Jazz,C#: G#6,F3 D#3 C3 G#2
+93,Jazz,D: Am7,G3 E3 C3 A2
+93,Jazz,D#: A#M7,A3 F3 D3 A#2
+93,Jazz,E: Gadd11/B,G3 D3 C3 B2
+93,Jazz,F: FM7/C,A3 F3 E3 C3
+93,Jazz,F#: A7/C,A3 G3 E3 C#3
+93,Jazz,G: D7/C,A3 F#3 D3 C3
+93,Jazz,G#: D#M7b5/D,A3 G3 D#3 D3
+93,Jazz,A: Cadd9/D,C4 G3 E3 D3
+93,Jazz,A#: Fadd9,C4 A3 G3 F3
+93,Jazz,B: Cdim7,A3 F#3 D#3 C3
+94,Jazz,C: CM7,B4 E4 G3 C3
+94,Jazz,C#: DbM7,C5 F4 G#3 C#3
+94,Jazz,D: Dm7,C5 F4 A3 D3
+94,Jazz,D#: Ebm7add13,C5 F#4 C#4 D#3
+94,Jazz,E: Em7/b13,C5 G4 D4 E3
+94,Jazz,F: Fm7,C5 G#4 D#4 F3
+94,Jazz,F#: F#m7/b5,C5 A4 E4 F#3
+94,Jazz,G: G9sus,A4 F4 C4 G3
+94,Jazz,G#: G#dim7,B4 F4 D4 G#3
+94,Jazz,A: Am6,C5 F#4 E4 A3
+94,Jazz,A#: F/Bb,A4 F4 C4 A#2
+94,Jazz,B: Bdim7,G#4 D4 F3 B2
+95,Classical,C: FM7/E,A4 F4 E4
+95,Classical,C#: Bdim/D,B4 F4 D4
+95,Classical,D: Am,C5 E4 A3
+95,Classical,D#: G#dim7,D5 F4 B3 G#3
+95,Classical,E: C/G,E5 E4 C4 G4
+95,Classical,F: Amb9/C,A5 A#4 E4 C4
+95,Classical,F#: Fadd9/C,G5 A4 F4 C4
+95,Classical,G: Dm,F5 A4 F4 D3
+95,Classical,G#: C/G,E5 G4 C4 G2
+95,Classical,A: C/G,C5 E4 G3 G2
+95,Classical,A#: Fadd9/G,A4 F4 C4 G2
+95,Classical,B: Ddim/G,G#4 F4 D4 G2
+96,Classical,C: Am,E4 C4 A3 A2
+96,Classical,C#: Bm7/A,D4 B3 A3 A2
+96,Classical,D: Fdim/B,F4 B3 G#3 B2
+96,Classical,D#: C/E,E4 C4 G3 E3
+96,Classical,E: A7/G,E4 C#4 A3 G3
+96,Classical,F: Dm7,F4 C4 A3 D3
+96,Classical,F#: D#aug,D#4 B3 G3 D#3
+96,Classical,G: E,E4 B3 G#3 E3
+96,Classical,G#: F,F4 C4 A3 F3
+96,Classical,A: D/F#,D4 A3 F#3 F#2
+96,Classical,A#: C/G,E4 C4 G3 G2
+96,Classical,B: E/G#,E4 B3 G#3 G#2
+97,Classical,C: F#/C#,F#4 A#3 F#3 C#3
+97,Classical,C#: F#/A#,F#4 C#4 F#3 A#2
+97,Classical,D: G#m7,F#4 B3 F#3 G#2
+97,Classical,D#: A6,F#4 C#4 E3 A2
+97,Classical,E: F#/C#,F#4 C#4 F#3 A#2
+97,Classical,F: Bsus2,F#4 C#4 F#3 B2
+97,Classical,F#: G#/C,G#4 D#4 G#3 C3
+97,Classical,G: C#7,F4 B3 G#3 C#3
+97,Classical,G#: A#7/D,F4 A#3 G#3 D3
+97,Classical,A: F#6sus4/C#,D#4 B3 F#3 C#3
+97,Classical,A#: C#m7,E4 B3 G#3 C#3
+97,Classical,B: C#7,F4 B3 F3 C#3
+98,Classical,C: Dm,D4 A3 F3 D2
+98,Classical,C#: D#M7/D,D#4 A#3 G3 D2
+98,Classical,D: E7/D,B3 G#3 E3 D2
+98,Classical,D#: Dm7,C4 A3 F3 D2
+98,Classical,E: D7,C4 A3 F#3 D2
+98,Classical,F: Gm/D,D4 A#3 G3 D2
+98,Classical,F#: G#/D,D#4 C4 G#3 D2
+98,Classical,G: A/D,E4 C#4 A3 D2
+98,Classical,G#: A#add9/D,F4 C4 A#3 D2
+98,Classical,A: DM7(13),F#4 C#4 B3 D2
+98,Classical,A#: Csus2/D,G4 D4 C4 D2
+98,Classical,B: G#dim/D,G#4 D4 B3 D2
+99,Modern,C: CM13,B3 A3 E3 C3
+99,Modern,C#: AM9/C#,B3 A3 E3 C#3
+99,Modern,D: Dm13,C4 B3 F3 D3
+99,Modern,D#: EbM13,D4 C4 G3 D#3
+99,Modern,E: CM9/E,D4 C4 G3 E3
+99,Modern,F: FM13,E4 D4 A3 F3
+99,Modern,F#: FmM13,E4 D4 G#3 F3
+99,Modern,G: CM9 (no3)/G,B4 D4 C4 G3
+99,Modern,G#: AbMb5/#9,B4 D4 C4 G#3
+99,Modern,A: Am11,D4 G3 C3 A2
+99,Modern,A#: BbM9,D4 A3 C3 A#2
+99,Modern,B: G6/9,E4 A3 G3 B2
+100,Modern,C: CM9,B4 E4 D4 C3
+100,Modern,C#: Cm9,Bb4 Eb4 D4 C3
+100,Modern,D: Dm9,C5 F4 E4 D3
+100,Modern,D#: Dm6/9,B4 F4 E4 D3
+100,Modern,E: CM9/E,B4 D4 C4 E3
+100,Modern,F: Dm9/F,C5 E4 D4 F3
+100,Modern,F#: D9/F#,C5 E4 D4 F#3
+100,Modern,G: Gsus13,E5 A4 F4 G3
+100,Modern,G#: G13b9,E5 Ab4 F4 G3
+100,Modern,A: AbMaj13,E5 Bb4 G4 Ab3
+100,Modern,A#: AbDimM7,G5 B4 F4 Ab3
+100,Modern,B: BbM13,A5 D5 G4 Bb3
+```
